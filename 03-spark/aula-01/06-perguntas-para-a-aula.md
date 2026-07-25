@@ -13,19 +13,19 @@ tags:
 
 ---
 
-## Parte 1 - Ancoragem: onde a Aula 1 encosta no seu trabalho
+## Parte 1 - Ancoragem: onde a teoria da Aula 1 vira decisão
 
-Você não está aprendendo Spark do zero conceitual: está aprendendo vocabulário novo para problemas que já são seus.
+Os capítulos apresentam driver, executor, avaliação preguiçosa e motor unificado como conceitos. Cada um esconde uma decisão de arquitetura que só aparece quando o pipeline cresce. Cinco pontos que valem ser carregados para a aula.
 
-**Driver e executor você já opera com outro nome.** A diferença para o seu orquestrador é que o driver do Spark monta e otimiza o plano, lista os arquivos do storage antes de qualquer executor trabalhar, e recebe de volta tudo que você pedir com `collect()`. O item do meio dói primeiro: quando o job aponta para `gs://bucket/scraping/tribunal=*/data=*/`, quem varre o prefixo é o driver, paginando de mil em mil objetos. Duzentos mil arquivos viram duzentas chamadas HTTP em série, com o cluster ocioso. É o antipadrão do "orquestrador virou gargalo", escondido numa linha que parece barata: `spark.read.json(path)`.
+**O driver faz mais do que orquestrar.** Ele monta e otimiza o plano, lista os arquivos do storage antes de qualquer executor trabalhar, e recebe de volta tudo que for pedido com `collect()`. O item do meio dói primeiro: quando o job aponta para um prefixo com muitos objetos, quem varre o prefixo é o driver, paginando de mil em mil. Centenas de milhares de objetos viram centenas de chamadas HTTP em série, com o cluster inteiro ocioso. É o antipadrão do "orquestrador virou gargalo", escondido numa linha que parece barata: `spark.read.json(path)`.
 
-**Seu problema de small files no GCS é, literalmente, particionamento.** Partição no Spark não é o `partitionBy` de diretório do bucket: é a unidade de paralelismo, uma partição por task, uma task por core. Na leitura vale `maxSplitBytes = min(maxPartitionBytes, max(openCostInBytes, bytesTotais / paralelismo))`, e cada arquivo entra na conta como **tamanho real mais `openCostInBytes`** (4 MB por padrão). Duzentos mil JSONs de 20 KB são 4 GB reais e cerca de 800 GB de custo contábil: mais de 6.000 tasks processando 640 KB cada. Não é "o Spark é lento com JSON", é um default de 2015 pensado para HDFS aplicado a object storage ([Performance Tuning](https://spark.apache.org/docs/latest/sql-performance-tuning.html)).
+**Arquivo pequeno é, literalmente, problema de particionamento.** Partição no Spark não é o `partitionBy` de diretório: é a unidade de paralelismo, uma partição por task, uma task por core. Na leitura vale `maxSplitBytes = min(maxPartitionBytes, max(openCostInBytes, bytesTotais / paralelismo))`, e cada arquivo entra na conta como **tamanho real mais `openCostInBytes`** (4 MB por padrão). Cem mil arquivos de 20 KB são 2 GB reais e cerca de 400 GB de custo contábil: mais de 3.000 tasks processando 640 KB cada. Não é "o Spark é lento com JSON", é um default de 2015 pensado para HDFS aplicado a object storage ([Performance Tuning](https://spark.apache.org/docs/latest/sql-performance-tuning.html)).
 
-**Lazy evaluation muda como você escreve validação.** Transformações constroem plano, ações disparam job. O ganho é *column pruning* e *predicate pushdown*, que em Parquet viram menos bytes lidos e menos operações Classe B. O custo escondido: sem `cache()`, cada ação re-executa a DAG desde a leitura, então cinco regras de DQ escritas como cinco `count()` são cinco varreduras do bucket.
+**Avaliação preguiçosa muda como se escreve validação.** Transformações constroem plano, ações disparam job. O ganho é *column pruning* e *predicate pushdown*, que em Parquet viram menos bytes lidos e menos requisições ao storage. O custo escondido: sem `cache()`, cada ação re-executa a DAG desde a leitura, então cinco regras de qualidade escritas como cinco `count()` são cinco varreduras completas.
 
-**PDF é o caso em que a abstração falha por premissa.** `pdfplumber` e `PyMuPDF` são Python, então você cai em `binaryFile` mais UDF. O Spark balanceia por bytes; seu custo varia por página, layout e necessidade de OCR. Dois arquivos de mesmo tamanho podem custar mil vezes diferente. E o processo Python do executor vive fora da heap da JVM, em `spark.executor.memoryOverhead`, causa número um de container morto em PySpark.
+**Extração de texto de binários é o caso em que a abstração falha por premissa.** As bibliotecas de PDF são Python, então o caminho é `binaryFile` mais UDF. O Spark balanceia por bytes, mas o custo real varia por página, layout e necessidade de OCR: dois arquivos do mesmo tamanho podem custar mil vezes diferente. E o processo Python do executor vive fora da heap da JVM, em `spark.executor.memoryOverhead`, causa número um de container morto em PySpark.
 
-**Motor unificado, para você, é argumento de manutenção antes de performance.** Hoje você tem dois caminhos de código para a mesma regra: o parser incremental de cada lote e o backfill que reprocessa histórico quando alguém descobre que o parser errava desde março. Eles divergem, e a divergência é fonte silenciosa de problema de qualidade. Uma definição só, rodando nos dois modos, é o argumento de Tech Lead. É mais forte que "é rápido".
+**Motor unificado é argumento de manutenção antes de performance.** O padrão comum é ter dois caminhos de código para a mesma regra: o que processa o lote que acabou de chegar e o que reprocessa histórico quando alguém descobre que a regra estava errada desde algum ponto no passado. Os dois divergem com o tempo, e a divergência é fonte silenciosa de problema de qualidade. Uma definição só, rodando nos dois modos, é o argumento mais forte a favor do motor unificado, e ele é de manutenção, não de velocidade.
 
 ---
 
@@ -77,7 +77,7 @@ Há um vazamento maior, no nível de motor. Os próprios autores do paper do CAC
 
 **Por que é boa:** reformula uma seção de "como executar" em pergunta de topologia, que é o ângulo de quem vai para produção.
 
-**Resposta que você já deve saber:** em `local[*]`, driver e executores são threads de uma JVM só, sem rede, sem serialização real e sem shuffle distribuído. Isso ensina sintaxe e esconde o que vai custar caro: `collect()` funciona porque tudo está no mesmo processo, e listar duzentos mil objetos não dói porque o disco local responde na hora. Em client mode o driver roda na sua máquina, então perder a conexão mata o job; é obrigatório para shells interativos, porque o REPL precisa do driver local. Em cluster mode o driver roda dentro do cluster e você pode fechar o terminal.
+**Resposta que você já deve saber:** em `local[*]`, driver e executores são threads de uma JVM só, sem rede, sem serialização real e sem shuffle distribuído. Isso ensina sintaxe e esconde o que vai custar caro: `collect()` funciona porque tudo está no mesmo processo, e listar cem mil arquivos não dói porque o disco local responde na hora. Em client mode o driver roda na sua máquina, então perder a conexão mata o job; é obrigatório para shells interativos, porque o REPL precisa do driver local. Em cluster mode o driver roda dentro do cluster e você pode fechar o terminal.
 
 O Connect é um quarto modelo: o driver vira serviço de vida longa, o cliente é fino e descartável, e a sessão sobrevive ao cliente. As dependências passam a ter dois lados, as do cliente e as dos executores que rodam UDF. Em qualquer modo, ligue `spark.eventLog.enabled=true` desde o primeiro dia, senão a Spark UI em `localhost:4040` morre junto com o processo.
 
@@ -85,13 +85,13 @@ O Connect é um quarto modelo: o driver vira serviço de vida longa, o cliente �
 
 ### Pergunta 5 - O custo fictício de 4 MB por arquivo
 
-> "A fórmula de particionamento na leitura conta cada arquivo como tamanho mais `openCostInBytes`, 4 MB por padrão, então duzentos mil arquivos de 20 KB viram milhares de tasks minúsculas. Qual heurística o senhor usa para escolher entre compactar upstream, aumentar esses limites, ou usar `coalesce` depois da leitura? Minha hipótese é que a terceira é a que menos resolve."
+> "A fórmula de particionamento na leitura conta cada arquivo como tamanho mais `openCostInBytes`, 4 MB por padrão, então cem mil arquivos de 20 KB viram milhares de tasks minúsculas. Qual heurística o senhor usa para escolher entre compactar upstream, aumentar esses limites, ou usar `coalesce` depois da leitura? Minha hipótese é que a terceira é a que menos resolve."
 
 **Por que é boa:** cita uma fórmula que não está nos capítulos, traz números e já embute a hipótese correta.
 
 **Resposta que você já deve saber:** `coalesce` age depois da leitura. As tasks pequenas já foram criadas, as conexões HTTPS já foram abertas e o custo de listagem já foi pago; ele reduz o número de arquivos de saída, não o custo de entrada. Subir `maxPartitionBytes` e `openCostInBytes` reduz o número de tasks e o overhead de agendamento, mas não reduz o número de requisições ao storage, que continua sendo uma por objeto.
 
-Só compactar upstream ataca a causa. Mire arquivos entre 128 MB e 1 GB e trate compactação como etapa de primeira classe do pipeline, com dono e SLA, não como tuning de última hora. A documentação recomenda de duas a três tasks por core, com pelo menos algumas centenas de milissegundos de trabalho útil cada; seis mil tasks de 640 KB violam as duas coisas.
+Só compactar upstream ataca a causa. Mire arquivos entre 128 MB e 1 GB e trate compactação como etapa de primeira classe do pipeline, com dono e SLA, não como tuning de última hora. A documentação recomenda de duas a três tasks por core, com pelo menos algumas centenas de milissegundos de trabalho útil cada; milhares de tasks de 640 KB violam as duas coisas.
 
 ---
 
@@ -101,7 +101,7 @@ Só compactar upstream ataca a causa. Mire arquivos entre 128 MB e 1 GB e trate 
 
 **Por que é boa:** mostra que você entendeu que lazy não é grátis, e traz uma feature posterior aos livros.
 
-**Resposta que você já deve saber:** schema explícito é o padrão para fontes com contrato conhecido. Elimina o scan de inferência, que em duzentos mil arquivos pode ser metade do tempo do job, e falha alto quando o contrato quebra, o que é desejável. Inferência amostrada (`samplingRatio`) serve para exploração, nunca para produção: um campo nulo em toda a amostra vira `string`, e um campo numérico num tribunal e textual em outro gera conflito silencioso.
+**Resposta que você já deve saber:** schema explícito é o padrão para fontes com contrato conhecido. Elimina o scan de inferência, que em dezenas de milhares de arquivos pode ser metade do tempo do job, e falha alto quando o contrato quebra, o que é desejável. Inferência amostrada (`samplingRatio`) serve para exploração, nunca para produção: um campo nulo em toda a amostra vira `string`, e um campo numérico numa fonte e textual em outra gera conflito silencioso.
 
 VARIANT, GA na linha 4.x com shredding, é a resposta quando o payload é genuinamente heterogêneo e você não controla a origem: guarda o semi-estruturado em binário otimizado e permite acesso por campo sem reparsear a cada query ([Open Variant Data Type](https://www.databricks.com/blog/introducing-open-variant-data-type-delta-lake-and-apache-spark)). O trade-off é o que interessa: você troca falha explícita de contrato por flexibilidade, e empurra a detecção de mudança para a camada de DQ. Sem asserções versionadas e alerta de taxa de rejeição, VARIANT vira silêncio.
 
@@ -115,51 +115,51 @@ VARIANT, GA na linha 4.x com shredding, é a resposta quando o payload é genuin
 
 **Resposta que você já deve saber:** está correto. O AQE faz três coisas, todas pós-shuffle: coalescing de partições de shuffle (`advisoryPartitionSizeInBytes`, padrão 64 MB), conversão de estratégia de join em runtime quando um lado se revela pequeno, e split de partições com skew. O split exige violar **dois** limiares ao mesmo tempo, `skewedPartitionFactor` (5x a mediana) e `skewedPartitionThresholdInBytes` (256 MB).
 
-Ficam fora do alcance dele o número de partições na leitura, o custo de listar objetos no storage e o skew de custo por registro. Esse último é o seu caso de PDF: as partições podem estar balanceadas em bytes e completamente desbalanceadas em tempo, porque o AQE mede bytes. O lugar de verificar é a aba Stages da Spark UI, nas Summary Metrics por percentil: um Max dez vezes a mediana em Duration explica quase todo estágio lento.
+Ficam fora do alcance dele o número de partições na leitura, o custo de listar objetos no storage e o skew de custo por registro. Esse último aparece em qualquer carga cujo custo não é proporcional ao tamanho, como extração de texto de binários: as partições podem estar balanceadas em bytes e completamente desbalanceadas em tempo, porque o AQE mede bytes. O lugar de verificar é a aba Stages da Spark UI, nas Summary Metrics por percentil: um Max dez vezes a mediana em Duration explica quase todo estágio lento.
 
 ---
 
 ### Nível 3 - Ponte com produção
 
-### Pergunta 8 - Desenho para duzentos mil JSONs por dia
+### Pergunta 8 - Onde compactar uma camada bruta de muitos arquivos pequenos
 
-> "Contexto real: meus pipelines de scraping jurídico depositam cerca de duzentos mil JSONs pequenos por dia em GCS, com volume entre tribunais variando por ordens de magnitude. Qual desenho o senhor recomendaria: compactar já na ingestão, usar Spark só como compactador para uma camada bruta em Parquet, ou adotar um table format e delegar a compactação ao `OPTIMIZE`?"
+> "Cenário: um pipeline de ingestão deposita dezenas de milhares de JSONs pequenos por dia em object storage, com volume por fonte variando em ordens de magnitude. Qual desenho o senhor recomendaria: compactar já na ingestão, usar Spark só como compactador para uma camada bruta em Parquet, ou adotar um table format e delegar a compactação ao `OPTIMIZE`?"
 
-**Por que é boa:** problema arquitetural real, com números, e as três opções são defensáveis. Força um debate de trade-off que serve à turma.
+**Por que é boa:** é um problema arquitetural em que as três opções são defensáveis. Força um debate de trade-off que serve à turma.
 
-**Resposta que você já deve saber:** o critério não é performance, é onde está a latência aceitável e quem é dono da correção. Compactar na ingestão é o mais barato em compute, mas acopla o scraper ao formato analítico: mudou o schema analítico, mexeu no coletor. Usar Spark como compactador para uma camada bruta em Parquet é o mais comum e o mais fácil de justificar, porque preserva o bruto imutável como fonte de verdade.
+**Resposta que você já deve saber:** o critério não é performance, é onde está a latência aceitável e quem é dono da correção. Compactar na ingestão é o mais barato em compute, mas acopla o produtor ao formato analítico: mudou o schema analítico, mexeu no coletor. Usar Spark como compactador para uma camada bruta em Parquet é o mais comum e o mais fácil de justificar, porque preserva o bruto imutável como fonte de verdade.
 
-Table format (Iceberg ou Delta) é o mais robusto a longo prazo: commit atômico de snapshot, time travel, isolamento de leitores concorrentes e manutenção declarativa. O preço é operar mais um componente de plataforma. Em qualquer opção, o skew entre tribunais precisa ser tratado no layout: se dois tribunais dominam o volume, particionar só por tribunal e data cria diretórios gigantes ao lado de vazios, e o tempo do estágio vira o da task mais lenta.
+Table format (Iceberg ou Delta) é o mais robusto a longo prazo: commit atômico de snapshot, time travel, isolamento de leitores concorrentes e manutenção declarativa. O preço é operar mais um componente de plataforma. Em qualquer opção, o skew entre fontes precisa ser tratado no layout: se duas fontes dominam o volume, particionar só por fonte e data cria diretórios gigantes ao lado de vazios, e o tempo do estágio vira o da task mais lenta.
 
 ---
 
-### Pergunta 9 - Quando o Spark mede a coisa errada: PDF
+### Pergunta 9 - Quando o Spark mede a coisa errada
 
-> "Extração de texto de PDF depende de biblioteca Python, então caio em `binaryFile` mais UDF. O Spark particiona por bytes, mas meu custo varia por três ordens de magnitude entre um PDF nativo de duas páginas e um escaneado de oitocentas com OCR. Como se dimensiona executor e particionamento quando a métrica de custo do Spark não é a métrica de custo do trabalho?"
+> "Extração de texto de PDF depende de biblioteca Python, então o caminho é `binaryFile` mais UDF. O Spark particiona por bytes, mas o custo pode variar três ordens de magnitude entre um PDF nativo de duas páginas e um escaneado de oitocentas com OCR. Como se dimensiona executor e particionamento quando a métrica de custo do Spark não é a métrica de custo do trabalho?"
 
-**Por que é boa:** é um caso em que a abstração falha por premissa, não por configuração, e ninguém na sala terá pensado nisso.
+**Por que é boa:** é um caso em que a abstração falha por premissa, não por configuração, e provavelmente ninguém na sala terá pensado nisso.
 
-**Resposta que você já deve saber:** separar por faixa é a resposta prática. Faça um passo barato de metadados que classifique os arquivos por tamanho e número de páginas, e rode dois ou três jobs com perfis diferentes: poucas tasks concorrentes e muita memória para os pesados, muitas tasks leves para o resto. Você faz à mão o balanceamento que o Spark não faz porque não conhece a sua função de custo.
+**Resposta que você já deve saber:** separar por faixa é a resposta prática. Um passo barato de metadados classifica os arquivos por tamanho e número de páginas, e daí rodam dois ou três jobs com perfis diferentes: poucas tasks concorrentes e muita memória para os pesados, muitas tasks leves para o resto. É fazer à mão o balanceamento que o Spark não faz porque não conhece a função de custo do trabalho.
 
-A armadilha de memória é específica: o processo Python do executor vive **fora** da heap da JVM, em `spark.executor.memoryOverhead`, cujo padrão é 10% da memória do executor com piso de 384 MiB. Para UDF pesada isso é pouco, e o sintoma é o container ser morto pelo gerenciador de cluster, não um `OutOfMemoryError` da JVM. Há também DQ dentro da transformação: uma UDF que levanta exceção mata a task, consome retries e derruba o job por causa de um PDF corrompido. Ela precisa capturar o erro e devolver um struct com status, para a taxa de falha por tribunal virar métrica, não incidente.
+A armadilha de memória é específica: o processo Python do executor vive **fora** da heap da JVM, em `spark.executor.memoryOverhead`, cujo padrão é 10% da memória do executor com piso de 384 MiB. Para UDF pesada isso é pouco, e o sintoma é o container ser morto pelo gerenciador de cluster, não um `OutOfMemoryError` da JVM. Há também qualidade de dados dentro da transformação: uma UDF que levanta exceção mata a task, consome retries e derruba o job por causa de um único arquivo corrompido. Ela precisa capturar o erro e devolver um struct com status, para a taxa de falha virar métrica, não incidente.
 
 ---
 
 ### Pergunta 10 - Schema drift e a fronteira entre Spark e DQ
 
-> "Sites de tribunal mudam layout sem aviso, então schema drift é rotina. Entre `PERMISSIVE` com `_corrupt_record`, `badRecordsPath`, `FAILFAST` e VARIANT, o que se sustenta em produção? Onde termina a responsabilidade do Spark e começa a de um framework de DQ?"
+> "Quando a fonte é semiestruturada e muda de layout sem aviso, schema drift é rotina. Entre `PERMISSIVE` com `_corrupt_record`, `badRecordsPath`, `FAILFAST` e VARIANT, o que se sustenta em produção? Onde termina a responsabilidade do Spark e começa a de um framework de qualidade de dados?"
 
-**Por que é boa:** conecta o tema da aula a uma iniciativa que você lidera e pede uma fronteira arquitetural, não uma feature.
+**Por que é boa:** pede uma fronteira arquitetural, não uma feature, e é a pergunta que separa quem já operou pipeline de quem só escreveu job.
 
-**Resposta que você já deve saber:** `PERMISSIVE` silencioso é o pior dos mundos. O registro entra com campos nulos, ninguém olha o `_corrupt_record`, e o drift aparece semanas depois em um relatório errado. `FAILFAST` é honesto, mas derruba o lote inteiro por um registro, o que em coleta contínua é indefensável.
+**Resposta que você já deve saber:** `PERMISSIVE` silencioso é o pior dos mundos. O registro entra com campos nulos, ninguém olha o `_corrupt_record`, e o drift aparece semanas depois em um relatório errado. `FAILFAST` é honesto, mas derruba o lote inteiro por um registro, o que em ingestão contínua é indefensável.
 
-A combinação viável tem duas peças: quarentena explícita, com o registro ruim indo para uma tabela de rejeitos com motivo e origem, e a **taxa de rejeição por fonte** virando métrica com limiar e alerta; e VARIANT quando você quer absorver o drift sem quebrar o pipeline. A fronteira é essa: o Spark entrega o mecanismo de captura e o lugar onde o dado ruim aterrissa; o contrato, o limiar e a decisão de bloquear ou seguir são do framework de DQ. Se essa decisão ficar dentro do job, vira config espalhada por vinte pipelines e ninguém sabe qual é a política.
+A combinação viável tem duas peças: quarentena explícita, com o registro ruim indo para uma tabela de rejeitos com motivo e origem, e a **taxa de rejeição por fonte** virando métrica com limiar e alerta; e VARIANT quando a intenção é absorver o drift sem quebrar o pipeline. A fronteira é essa: o Spark entrega o mecanismo de captura e o lugar onde o dado ruim aterrissa; o contrato, o limiar e a decisão de bloquear ou seguir são do framework de qualidade. Se essa decisão ficar dentro do job, vira config espalhada por dezenas de pipelines e ninguém sabe qual é a política.
 
 ---
 
 ### Pergunta 11 - Commit em object storage e o mito do `_SUCCESS`
 
-> "Object storage não tem rename atômico, e o commit protocol do Spark historicamente dependia disso. Se um job de seis mil tasks falha a 80%, o que sobra no meu bucket, e o que acontece se o Airflow reexecutar por cima? O marcador `_SUCCESS` é suficiente como sinal de completude para consumidores a jusante?"
+> "Object storage não tem rename atômico, e o commit protocol do Spark historicamente dependia disso. Se um job de milhares de tasks falha a 80%, o que sobra no bucket, e o que acontece se o orquestrador reexecutar por cima? O marcador `_SUCCESS` é suficiente como sinal de completude para consumidores a jusante?"
 
 **Por que é boa:** é preocupação de operação, não de API, e o `_SUCCESS` é uma crença difundida e frágil.
 
@@ -171,15 +171,15 @@ Existem duas saídas honestas. Tornar a partição idempotente com overwrite din
 
 ### Pergunta 12 - O limiar honesto: quando Spark ganha do que já funciona
 
-> "Pergunta de decisão, não de técnica. Hoje eu resolvo boa parte do processamento com Python paralelizado mais BigQuery, e funciona. Qual é o limiar honesto, em volume e em tipo de operação, a partir do qual o Spark ganha desse arranjo? E onde adotar Spark é claramente erro de arquitetura, mesmo com dados grandes?"
+> "Pergunta de decisão, não de técnica. Um arranjo muito comum hoje é Python paralelizado mais um warehouse na nuvem, e ele funciona. Qual é o limiar honesto, em volume e em tipo de operação, a partir do qual o Spark ganha desse arranjo? E onde adotar Spark é claramente erro de arquitetura, mesmo com dados grandes?"
 
-**Por que é boa:** é o que um Tech Lead precisa responder para a gestão, e exige que o professor admita os limites da disciplina.
+**Por que é boa:** é a pergunta que alguém precisa responder para a gestão antes de aprovar a adoção, e exige que o professor admita os limites da disciplina.
 
 **Resposta que você já deve saber:** comece pela evidência, porque ela é contraintuitiva. O estudo da Microsoft Research de 2013 analisou 174 mil jobs de produção e achou mediana de input abaixo de 14 GB ([Nobody ever got fired for buying a cluster](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/msrtr-2013-2.pdf)). O RedSet, da AWS, analisou meio bilhão de queries do Redshift: 75% escaneiam menos de 1 GB, e só três em cada dez mil passam de 10 TB ([PVLDB vol. 17](https://www.vldb.org/pvldb/vol17/p3694-saxena.pdf)). Enquanto isso, o que cabe numa máquina cresceu duas ordens de magnitude, com instâncias EC2 chegando a 32 TiB de RAM.
 
 O Spark ganha quando o dado é semi-estruturado ou binário e precisa de código imperativo antes de virar tabela, que é exatamente PDF, HTML e parsing complexo; quando o perfil é write-heavy, com MERGE, compactação e backfill; quando o job dura horas e recomeçar do zero é inaceitável, porque linhagem, spill e retry são o seguro que você paga o ano inteiro e usa no dia do incidente; e acima de 8 a 16 vCores de paralelismo útil, ponto em que a economia de escala inverte a favor dele.
 
-É erro quando o trabalho é SQL analítico sobre dado limpo e tabelado, quando o volume cabe numa máquina, e quando não há quem opere o cluster, porque o custo dominante do Spark é operacional e cognitivo. No benchmark do Coiled, os autores gastaram mais tempo ajustando Spark do que todos os outros sistemas somados ([TPC-H comparison](https://docs.coiled.io/blog/tpch.html)). A síntese defensável é híbrida, e é provavelmente o que você vai propor no trabalho.
+É erro quando o trabalho é SQL analítico sobre dado limpo e tabelado, quando o volume cabe numa máquina, e quando não há quem opere o cluster, porque o custo dominante do Spark é operacional e cognitivo. No benchmark do Coiled, os autores gastaram mais tempo ajustando Spark do que todos os outros sistemas somados ([TPC-H comparison](https://docs.coiled.io/blog/tpch.html)). A síntese defensável é híbrida: Spark para ELT distribuído e carga write-heavy, single-node para exploração e manutenção leve.
 
 ---
 

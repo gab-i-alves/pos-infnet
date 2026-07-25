@@ -202,13 +202,13 @@ Regras de bolso defensáveis:
 
 A resposta provavelmente certa, e a que Miles Cole defende, é **híbrida**: Spark para ELT distribuído e cargas write-heavy; DuckDB ou Polars para exploração, query interativa e manutenção leve de tabelas. A pergunta "Spark ou DuckDB?" pode ser a pergunta errada. O custo do híbrido é manter dois caminhos de execução, e esse custo precisa entrar na conta explicitamente.
 
-### Aplicando ao seu contexto
+### Três cenários para rodar contra a árvore
 
-Vale fazer esse exercício antes da aula, com números seus:
+Vale fazer o exercício antes da aula, porque os três caem em lugares diferentes:
 
-- Os pipelines de scraping produzem muitos arquivos pequenos. Isso é caso de **compaction**, que é write-heavy, e portanto território de Spark, mesmo com volume total modesto.
-- Extração de PDF é carga **CPU-bound e embaraçosamente paralela**, sem shuffle. Aqui o Spark serve como escalonador de tarefas, não como motor de dados, e a comparação honesta é contra um pool de workers simples.
-- Checagens de Data Quality sobre recortes recentes são exatamente o perfil que o RedSet descreve: leitura, volume pequeno, alta frequência. Candidatas naturais a DuckDB.
+- **Camada bruta acumulando muitos arquivos pequenos.** É caso de **compaction**, que é write-heavy, e portanto território de Spark, mesmo com volume total modesto.
+- **Extração de texto de arquivos binários** é carga **CPU-bound e embaraçosamente paralela**, sem shuffle. Aqui o Spark serve como escalonador de tarefas, não como motor de dados, e a comparação honesta é contra um pool de workers simples.
+- **Checagens de Data Quality sobre recortes recentes** são exatamente o perfil que o RedSet descreve: leitura, volume pequeno, alta frequência. Candidatas naturais a DuckDB.
 
 ---
 

@@ -49,7 +49,7 @@ Se você só puder guardar uma coisa deste documento, guarde esta seção. AQE c
 
 ### 2.1 O problema que ele resolve
 
-O Catalyst planeja a query **antes** de executar, com base em estatísticas de catálogo: contagem de linhas, tamanho em bytes, histogramas quando existem. Em um data warehouse bem cuidado isso funciona. Em um data lake sobre Parquet no GCS, alimentado por scraping, com arquivos de tamanhos irregulares e sem `ANALYZE TABLE` rodando, a estimativa é frequentemente ruim. Um filtro seletivo demais, uma coluna com cardinalidade mal estimada, e o otimizador escolhe um sort-merge join onde cabia um broadcast, ou reparte 200 vezes um resultado que virou 3 MB.
+O Catalyst planeja a query **antes** de executar, com base em estatísticas de catálogo: contagem de linhas, tamanho em bytes, histogramas quando existem. Em um data warehouse bem cuidado isso funciona. Em um data lake sobre Parquet em object storage, alimentado por ingestão contínua, com arquivos de tamanhos irregulares e sem `ANALYZE TABLE` rodando, a estimativa é frequentemente ruim. Um filtro seletivo demais, uma coluna com cardinalidade mal estimada, e o otimizador escolhe um sort-merge join onde cabia um broadcast, ou reparte 200 vezes um resultado que virou 3 MB.
 
 AQE resolve isso mudando **quando** a decisão é tomada. O plano físico é quebrado em estágios delimitados por shuffle. Ao fim de cada estágio, o Spark tem estatísticas **reais** dos dados materializados: tamanho de cada partição de shuffle, contagem de registros. Com esse número em mãos, ele re-otimiza o restante do plano antes de continuar. Não é heurística nova, é o mesmo otimizador rodando com dados melhores.
 
@@ -97,7 +97,7 @@ Quando o AQE converte para broadcast, o `localShuffleReader` evita um shuffle de
 
 Este é o item que merece mais atenção, porque skew é o modo de falha mais frequente em dados do mundo real e o mais difícil de diagnosticar sem entender o mecanismo.
 
-O sintoma: um job com 200 tarefas onde 199 terminam em 40 segundos e uma roda por 25 minutos. A causa: a chave do join tem distribuição desbalanceada. Em dados jurídicos, isso é regra, não exceção. Pense em processos por tribunal, por comarca, ou em um join por CNPJ onde um punhado de grandes litigantes concentra centenas de milhares de processos. O hash da chave joga tudo isso na mesma partição de shuffle, e essa partição vira uma tarefa "straggler" que segura o estágio inteiro, porque um estágio só termina quando a última tarefa termina.
+O sintoma: um job com 200 tarefas onde 199 terminam em 40 segundos e uma roda por 25 minutos. A causa: a chave do join tem distribuição desbalanceada. Em dados do mundo real isso é regra, não exceção: qualquer agrupamento por entidade em que um punhado de participantes concentra a maior parte dos registros, seja cliente, região ou fornecedor. O hash da chave joga tudo isso na mesma partição de shuffle, e essa partição vira uma tarefa "straggler" que segura o estágio inteiro, porque um estágio só termina quando a última tarefa termina.
 
 O que o AQE faz: detecta a partição desproporcional e a **divide** em sub-partições menores, replicando a partição correspondente do outro lado do join para que o resultado continue correto. Uma partição de 3 GB vira, digamos, doze pedaços de 256 MB, e o lado oposto (que é pequeno para aquela chave) é lido doze vezes. Você troca leitura redundante barata por paralelismo.
 
@@ -136,13 +136,13 @@ DPP entrou no Spark 3.0 e é **ligado por padrão** (`spark.sql.optimizer.dynami
 É uma otimização de **esquema estrela**. Em um join entre uma tabela fato grande e particionada e uma tabela dimensão pequena com filtro, o Spark constrói em tempo de execução um filtro dinâmico a partir dos valores que sobraram no lado pequeno e o injeta como subquery no scan da tabela fato. O resultado é que o scan lê apenas os diretórios de partição relevantes, em vez de ler tudo e filtrar depois do join.
 
 ```sql
-SELECT f.processo_id, f.valor, d.tribunal_nome
-FROM fato_movimentacoes f
-JOIN dim_tribunal d ON f.data_particao = d.data_particao
+SELECT f.pedido_id, f.valor, d.nome_loja
+FROM fato_vendas f
+JOIN dim_loja d ON f.data_particao = d.data_particao
 WHERE d.regiao = 'SUDESTE';
 ```
 
-Sem DPP, o Spark lê todas as partições de `fato_movimentacoes`. Com DPP, ele resolve primeiro o filtro na dimensão, descobre quais valores de `data_particao` sobreviveram e lê só esses diretórios.
+Sem DPP, o Spark lê todas as partições de `fato_vendas`. Com DPP, ele resolve primeiro o filtro na dimensão, descobre quais valores de `data_particao` sobreviveram e lê só esses diretórios.
 
 **Três condições precisam valer ao mesmo tempo:**
 
@@ -166,7 +166,7 @@ Fontes: [Performance Tuning](https://spark.apache.org/docs/latest/sql-performanc
 
 **Modo ANSI SQL por padrão (SPARK-44444).** `spark.sql.ansi.enabled = true`. Divisão por zero, overflow numérico e cast inválido agora **falham** em vez de retornar `null` em silêncio. Esta é a mudança de comportamento mais impactante para código legado, e a mais fácil de defender em prova: silenciar erro aritmético em pipeline de dados é como engolir exceção em produção. Existe migration guide e dá para reverter pela config, mas reverter é dívida.
 
-**Tipo VARIANT (SPARK-45827).** Tipo nativo para dados semiestruturados, tipicamente JSON, armazenado em formato binário aberto, com acesso a campos aninhados sem reparse a cada leitura. Isto é diretamente relevante para o seu trabalho: payload de scraping e retorno de webservice normalmente chegam como JSON string, e hoje isso vira `get_json_object` custando parse por linha por acesso. No **4.1** o VARIANT virou GA com **shredding** (SPARK-54454), que materializa subcampos frequentes em colunas físicas. O tipo também foi adotado no **Iceberg v3**.
+**Tipo VARIANT (SPARK-45827).** Tipo nativo para dados semiestruturados, tipicamente JSON, armazenado em formato binário aberto, com acesso a campos aninhados sem reparse a cada leitura. Resolve um incômodo antigo: payload de API e resposta de serviço HTTP normalmente aterrissam como JSON string, e sem VARIANT isso vira `get_json_object` custando parse por linha por acesso. No **4.1** o VARIANT virou GA com **shredding** (SPARK-54454), que materializa subcampos frequentes em colunas físicas. O tipo também foi adotado no **Iceberg v3**.
 
 **Spark Connect maduro.** Arquitetura cliente-servidor via gRPC e Arrow, introduzida no 3.4. O 4.0 trouxe o cliente Python leve `pyspark-client` (cerca de 1,5 MB, contra centenas de MB do `pyspark` completo), paridade de API no cliente Java, clientes em Go, Swift e Rust, e a config `spark.api.mode` para alternar entre clássico e Connect sem reescrever a aplicação.
 

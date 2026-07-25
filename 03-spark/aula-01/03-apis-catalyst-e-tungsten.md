@@ -88,12 +88,12 @@ O que isso muda na sua prática:
 from pyspark.sql import DataFrame, functions as F
 
 # O contrato de tipo em PySpark vive nas FUNÇÕES, não nos dados.
-def enriquecer_processos(df: DataFrame) -> DataFrame:
+def enriquecer_pedidos(df: DataFrame) -> DataFrame:
     """Assinatura tipada documenta a transformação. O schema dos dados
     é garantido separadamente, por StructType explícito na leitura."""
     return (df
-            .withColumn("ano", F.year("data_distribuicao"))
-            .withColumn("tribunal_uf", F.upper(F.col("tribunal_uf"))))
+            .withColumn("ano", F.year("data_pedido"))
+            .withColumn("uf_destino", F.upper(F.col("uf_destino"))))
 ```
 
 Ferramentas que reduzem a lacuna e são externas ao Spark: Pandera para contrato de schema, `chispa` para asserções em testes, e `great_expectations` para validação em pipeline. Nenhuma delas é Dataset, mas juntas cobrem o motivo pelo qual você quereria um.
@@ -106,7 +106,7 @@ Resposta honesta: **quase nunca em código novo, e menos ainda em PySpark.** RDD
 
 Casos que ainda sobrevivem em 2026:
 
-1. **Spark como escalonador de tarefas genéricas.** É o caso mais legítimo que resta e provavelmente o mais próximo do seu dia a dia. Você tem N tarefas paralelas que não são "processar linhas": disparar N raspagens, converter N PDFs, chamar N APIs. `sc.parallelize(lista, numSlices=N).mapPartitions(executa)` usa o Spark puramente como distribuidor de trabalho, sem schema para otimizar. Ressalva importante: em PySpark, `mapInPandas` sobre um DataFrame de parâmetros costuma dar o mesmo resultado com integração melhor (métricas na UI, AQE, tolerância a falha por tarefa).
+1. **Spark como escalonador de tarefas genéricas.** É o caso mais legítimo que resta. Você tem N tarefas paralelas que não são "processar linhas": converter N arquivos binários, chamar N APIs, rodar N simulações. `sc.parallelize(lista, numSlices=N).mapPartitions(executa)` usa o Spark puramente como distribuidor de trabalho, sem schema para otimizar. Ressalva importante: em PySpark, `mapInPandas` sobre um DataFrame de parâmetros costuma dar o mesmo resultado com integração melhor (métricas na UI, AQE, tolerância a falha por tarefa).
 2. **Particionador customizado.** `partitionBy(new MeuPartitioner)` não tem equivalente exato na API de DataFrame. `repartition` e `repartitionByRange` cobrem hash e faixa, não lógica arbitrária. Cada vez mais raro com AQE.
 3. **Código legado e bibliotecas RDD-only.** `org.apache.spark.mllib` (em manutenção desde o 2.0) e **GraphX**, que não tem sucessor em DataFrame dentro do core.
 4. **Formatos verdadeiramente não estruturados**, antes de existir schema. Ressalva forte: `spark.read.format("binaryFile")` e `.text()` cobrem a maioria dos casos e mantêm você dentro do DataFrame.
@@ -285,13 +285,13 @@ Quando você escreve isto:
 
 ```python
 (df.filter(F.col("valor") > 100)
-   .groupBy("tribunal_uf")
+   .groupBy("uf_destino")
    .agg(F.sum("valor").alias("total")))
 ```
 
 **nenhuma linha de dado passa pelo Python.** A API Python constrói uma árvore de expressões e a envia para a JVM, via Py4J no PySpark clássico ou como protobuf sobre gRPC no Spark Connect. A partir daí, o Catalyst otimiza o mesmo plano que o Scala geraria, o Tungsten gera bytecode, os executores JVM processam `UnsafeRow`, e só o resultado agregado volta. O interpretador Python fica ocioso.
 
-O corolário é a regra de ouro do seu trabalho em PySpark: **a briga "Scala contra Python" é uma não-questão enquanto você ficar dentro das expressões de coluna.** Boa parte do ofício é nunca sair delas.
+O corolário é a regra de ouro de quem escreve PySpark: **a briga "Scala contra Python" é uma não-questão enquanto você ficar dentro das expressões de coluna.** Boa parte do ofício é nunca sair delas.
 
 ### Por que a UDF Python quebra isso
 
@@ -323,11 +323,11 @@ def classifica(lotes: Iterator[pd.Series]) -> Iterator[pd.Series]:
         yield pd.Series(modelo.predict(s.tolist()))
 
 # 3) mapInPandas: opera sobre pd.DataFrame inteiro e pode MUDAR o número de linhas
-def explode_paginas(lotes: Iterator[pd.DataFrame]) -> Iterator[pd.DataFrame]:
+def explode_itens(lotes: Iterator[pd.DataFrame]) -> Iterator[pd.DataFrame]:
     for pdf in lotes:
-        yield pdf.explode("paginas")
+        yield pdf.explode("itens")
 
-df.mapInPandas(explode_paginas, schema="processo_id string, paginas string")
+df.mapInPandas(explode_itens, schema="pedido_id string, itens string")
 ```
 
 **Mudança importante no Spark 4.2 (julho de 2026):** UDFs Python otimizadas com Arrow e o IPC do PySpark baseado em Arrow passaram a vir **habilitados por padrão** (SPARK-54555, [release 4.2.0](https://spark.apache.org/releases/spark-release-4-2-0.html)). Ou seja: uma `@udf` comum já usa o caminho colunar sem você reescrever nada, e no plano ela aparece como `ArrowEvalPython` em vez de `BatchEvalPython`. Todo material anterior a 2026 que diz "ative `spark.sql.execution.arrow.pyspark.enabled`" está desatualizado.

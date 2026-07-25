@@ -125,7 +125,7 @@ maxSplitBytes = min(spark.sql.files.maxPartitionBytes,
                     max(spark.sql.files.openCostInBytes, bytesPerCore))
 ```
 
-Defaults: `spark.sql.files.maxPartitionBytes = 128 MB` e `spark.sql.files.openCostInBytes = 4 MB`. Esse segundo valor é um custo fictício somado a cada arquivo, e é o mecanismo que faz muitos arquivos pequenos serem empacotados na mesma partição. Formatos não divisíveis (gzip, ou um Parquet com um row group único gigante) ignoram tudo isso: um arquivo vira uma partição, e você perde o paralelismo. Isso conecta direto com o seu dia a dia: **o problema dos arquivos pequenos no GCS não é só custo de listagem, é forma da partição**.
+Defaults: `spark.sql.files.maxPartitionBytes = 128 MB` e `spark.sql.files.openCostInBytes = 4 MB`. Esse segundo valor é um custo fictício somado a cada arquivo, e é o mecanismo que faz muitos arquivos pequenos serem empacotados na mesma partição. Formatos não divisíveis (gzip, ou um Parquet com um row group único gigante) ignoram tudo isso: um arquivo vira uma partição, e você perde o paralelismo. É por isso que **o problema dos arquivos pequenos em object storage não é só custo de listagem, é forma da partição**.
 
 **Depois de um shuffle**, o número de partições é `spark.sql.shuffle.partitions`, que continua com default **200**. Esse é o pior default do Spark: 200 é absurdo tanto para 1 GB quanto para 10 TB.
 
