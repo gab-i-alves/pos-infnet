@@ -1,17 +1,19 @@
 ---
-title: "Aula 1 de Spark - Perguntas para a aula ao vivo"
+title: "Aula 01 de Spark - Aula ao vivo"
 aula: "Aula 01 - Arquitetura unificada do Spark, processamento em larga escala e preparação do ambiente"
 data: 2026-07-24
 tags:
   - spark
   - pos-infnet
   - aula-01
+  - aula
   - perguntas
   - arquitetura-spark
-  - data-quality
 ---
 
----
+# Aula 01 · Aula ao vivo
+
+Documento da terceira etapa: o que levar para a aula e o que trazer dela. As três primeiras partes são preparação, feitas antes de entrar. A quarta é o banco bruto de perguntas que nasceu do [aprofundamento](02-aprofundamento.md). A quinta se preenche durante e depois da aula.
 
 ## Parte 1 - Ancoragem: onde a teoria da Aula 1 vira decisão
 
@@ -196,3 +198,72 @@ Pergunta boa na hora errada vira ruído; no tom errado, vira disputa. Cinco regr
 **Não corrija versão em público a menos que seja material.** Se o slide disser Java 8, deixe passar. Se disser que o Spark Connect é experimental e você for basear topologia nisso, pergunte: "isso mudou do 3.4 para cá, né? Como está a maturidade hoje?". O critério é se a desatualização afeta a decisão de alguém na sala.
 
 **Escolha no máximo três perguntas.** Marque uma de cada nível antes de entrar. As demais viram material do pós-aula ou mensagem direta ao professor, canal melhor para as longas. Deixe a mais afiada para o fim, em tom de curiosidade genuína: "fiquei em dúvida sobre isso lendo os release notes" abre uma conversa que o professor provavelmente quer ter; "então a tese do livro não se sustenta" fecha a porta.
+
+---
+
+## Parte 4 - Banco de perguntas do aprofundamento
+
+Perguntas que surgiram parte por parte durante o aprofundamento, antes da curadoria. Várias reaparecem refinadas na Parte 2; estas ficam registradas porque a formulação bruta às vezes é melhor para uma conversa fora da aula.
+
+### Vindas da parte sobre arquitetura e modelo de execução
+
+1. Com AQE ligado por padrão desde o 3.2 e reotimização por estatísticas reais, ainda faz sentido investir em CBO e `ANALYZE TABLE`, ou o esforço migrou inteiro para layout de dados (particionamento físico, bucketing, tamanho de arquivo)?
+2. Em um pipeline com muitos arquivos pequenos em object storage, qual é a ordem de ataque: compactação no storage, ajuste de `maxPartitionBytes`, ou `repartition` depois da leitura? E como medir qual dominou?
+3. Com Spark Connect sem acesso a RDD, quais padrões operacionais reais deixam de ser possíveis, e vale a pena adotá-lo em produção hoje?
+4. Qual é o critério prático para decidir entre confiar na recomputação por linhagem e pagar um checkpoint em storage confiável?
+
+### Vindas da parte sobre por que o spark existe, e quando não usar
+
+Ancoradas em fonte, ordenadas da mais construtiva para a mais afiada.
+
+1. O paper de RDDs vende até 100x sobre MapReduce, mas o recorde do GraySort em 2014 foi em SSD, não em memória. Que parte do ganho é a linhagem evitando replicação e que parte é apenas "estar na RAM"?
+2. O estudo da Microsoft Research de 2013 já mostrava mediana de job abaixo de 14 GB, um ano depois do paper de RDDs. Por que a indústria adotou scale-out em massa com essa evidência disponível desde o início?
+3. Se o motor unificado é a tese central do artigo de 2016, por que a Databricks reescreveu a execução do Spark SQL em C++ fora da JVM com o Photon? A unificação sobreviveu na API ou no motor?
+4. A documentação do Spark 4.2.0 ainda precisa afirmar que a MLlib não está deprecada. Sem primitivas de GPU e com Ray dominando treino distribuído, a MLlib ainda faz parte da proposta de valor?
+5. A evidência de "small data" vem de telemetria de **leitura**, e o caso mais forte do Spark é ELT **write-heavy**. Os dois lados desse debate estão medindo a mesma coisa?
+6. O DuckDB processa 1 TB numa máquina de 64 GB em 19 minutos. A AWS vende instâncias de 32 TiB de RAM. Onde está o ponto de inflexão hoje, em números concretos?
+7. Se o meu maior job cabe em 256 GB de RAM, qual é o argumento **técnico**, e não organizacional, para eu rodar Spark?
+
+### Vindas da parte sobre rdd, dataframe, dataset, catalyst e tungsten
+
+1. Com AQE ligado por padrão desde o 3.2 e reordenação real de junções acontecendo em tempo de execução, o CBO baseado em `ANALYZE TABLE` ainda tem uso prático, ou virou peça de museu?
+2. `spark.sql.codegen.maxFields` com padrão 100: em tabelas largas, qual a estratégia recomendada, aumentar o limite ou reestruturar o schema em structs aninhados?
+3. Com UDFs Arrow ligadas por padrão no 4.2, qual a diferença de desempenho que ainda resta entre uma `@udf` comum e uma `@pandas_udf` escrita à mão?
+4. Photon, Gluten e Comet substituem o runtime JVM por execução nativa vetorizada. Isso torna o whole-stage codegen do Tungsten uma tecnologia de transição?
+5. O Spark Connect não expõe `SparkContext` nem RDD. Se a recomendação é Connect para aplicações novas, os casos legítimos de RDD deixam de existir na prática?
+
+### Vindas da parte sobre o que mudou desde os livros
+
+Três coisas que valem virar pergunta ao professor, porque são exatamente os pontos onde o material oficial e a realidade de 2026 divergem:
+
+1. Se o AQE está ligado por padrão desde o 3.2 e resolve coalescing, conversão de join e skew, o que sobrou de tuning manual que ainda vale a pena ensinar em 2026?
+2. Os livros ensinam DPP como recurso do Spark, mas as três condições de ativação quase nunca são verificadas na prática. Como se checa, no plano físico, se o DPP de fato ocorreu?
+3. Se a tese do paper de 2016 é o motor unificado, e a Databricks reescreveu a execução em C++ fora da JVM com o Photon, a unificação sobreviveu na API ou no motor?
+
+---
+
+## Parte 5 - Anotações da aula ao vivo
+
+**Data da aula:**
+
+### As três perguntas que eu escolhi levar
+
+| Nível | Pergunta | Fiz? | O que ele respondeu |
+|---|---|---|---|
+| 1 - ancoragem | | | |
+| 2 - profundidade | | | |
+| 3 - produção | | | |
+
+### O que o professor cobriu que eu não tinha previsto
+
+### Onde eu estava errada
+
+O que o aprofundamento me deu como certo e a aula corrigiu. Esta seção é a mais valiosa do documento: se estiver vazia, ou a aula foi rasa ou eu não prestei atenção.
+
+### Pendências
+
+Perguntas que não couberam, para mandar por mensagem direta ou levar na aula seguinte.
+
+### O que virou candidato a nota fiscal
+
+Ideias de artefato que apareceram na aula, para decidir em [04-pos-aula.md](04-pos-aula.md).

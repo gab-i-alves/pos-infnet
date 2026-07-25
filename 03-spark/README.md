@@ -2,7 +2,7 @@
 
 Terceira disciplina do MBA, cursada entre julho e agosto de 2026. Oito aulas de duas horas.
 
-Versão de referência do material: **Apache Spark 4.2.0**. A bibliografia oficial da disciplina (Luu, 2021; Damji et al., 2020) cobre o Spark 3.0, então boa parte dos dossiês aqui existe justamente para marcar o que mudou.
+Versão de referência do material: **Apache Spark 4.2.0**. A bibliografia oficial da disciplina (Luu, 2021; Damji et al., 2020) cobre o Spark 3.0, então boa parte do aprofundamento aqui existe justamente para marcar o que mudou.
 
 ## Competências da disciplina
 
@@ -13,13 +13,15 @@ Versão de referência do material: **Apache Spark 4.2.0**. A bibliografia ofici
 
 ## Aulas
 
-| # | Aula | Material |
-|---|---|---|
-| 01 | Introdução ao Apache Spark | [dossiê](aula-01/) |
-| 02 | Transformação e persistência SQL | — |
-| 03 | Transformação e análise avançada | — |
-| 04 | Otimização de desempenho no Spark | — |
-| 05 | Processamento em tempo real | — |
-| 06 | Gerenciamento de fluxos resilientes | — |
-| 07 | Integração e governança de dados | — |
-| 08 | Gestão de dados e transparência | — |
+| # | Aula | pre | deep | live | proof |
+|---|---|---|---|---|---|
+| [01](aula-01/) | Introdução ao Apache Spark | | ✓ | parcial | |
+| [02](aula-02/) | Transformação e persistência SQL | | | | |
+| [03](aula-03/) | Transformação e análise avançada | | | | |
+| [04](aula-04/) | Otimização de desempenho no Spark | | | | |
+| [05](aula-05/) | Processamento em tempo real | | | | |
+| [06](aula-06/) | Gerenciamento de fluxos resilientes | | | | |
+| [07](aula-07/) | Integração e governança de dados | | | | |
+| [08](aula-08/) | Gestão de dados e transparência | | | | |
+
+Cada aula tem quatro documentos, um por etapa do método. Ver o [README raiz](../README.md).
