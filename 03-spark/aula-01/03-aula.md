@@ -13,7 +13,7 @@ tags:
 
 # Aula 01 · Aula ao vivo
 
-Documento da terceira etapa: o que levar para a aula e o que trazer dela. As três primeiras partes são preparação, feitas antes de entrar. A quarta é o banco bruto de perguntas que nasceu do [aprofundamento](02-aprofundamento.md). A quinta se preenche durante e depois da aula.
+Documento da terceira etapa: o que levar para a aula e o que trazer dela. As três primeiras partes são preparação, feitas antes de entrar. A quarta é o banco bruto de perguntas que nasceu do [aprofundamento](02-aprofundamento.md). A quinta se preenche durante e depois da aula. Toda premissa citada nas perguntas da Parte 2 vem do registro de leitura em [01-pre-aula.md](01-pre-aula.md), que é onde conferir o que cada capítulo de fato diz antes de falar em voz alta.
 
 ## Parte 1 - Ancoragem: onde a teoria da Aula 1 vira decisão
 
@@ -37,31 +37,31 @@ Os capítulos apresentam driver, executor, avaliação preguiçosa e motor unifi
 
 ### Pergunta 1 - Os 100x sobre MapReduce
 
-> "Os dois capítulos repetem o número de 100x sobre MapReduce e atribuem isso a processamento em memória. Quanto desse ganho é RAM e quanto é o modelo de execução, ou seja, DAG em vez de uma cadeia de jobs materializando no HDFS entre cada passo?"
+> "O número de 100x aparece uma vez só nos quatro capítulos, no Luu 1, e ele mesmo credita ao site do projeto, sem carga declarada. O Damji 1 dá outros dois para a mesma comparação: 10 a 20 vezes nos artigos iniciais e 'muitas ordens de grandeza' hoje. E nenhum dos dois liga o ganho a memória. Quanto dele é RAM e quanto é o modelo de execução, ou seja, DAG em vez de uma cadeia de jobs materializando no HDFS entre cada passo?"
 
-**Por que é boa:** ataca o slogan dos dois livros e mostra que você entendeu o mecanismo, não a propaganda.
+**Por que é boa:** em vez de atacar um slogan, mostra que você leu os dois e percebeu que eles não fecham a mesma conta. Fecha a saída fácil de responder "é mais rápido porque é em memória".
 
 **Resposta que você já deve saber:** a maior parte vem do modelo de execução. O MapReduce grava cada job no HDFS com replicação tripla, e o job seguinte lê e desserializa de volta; um algoritmo iterativo de vinte passos paga vinte rodadas disso sobre dados que ele mesmo produziu. O Spark evita a materialização entre estágios e funde operações narrow dentro de um estágio, com whole-stage codegen gerando uma função Java única para o subplano.
 
-A contribuição do paper de RDDs não é "usar RAM", é tolerância a falhas sem replicação: cada RDD guarda o grafo de linhagem, e a partição perdida é recomputada a partir dos pais ([Zaharia et al., NSDI 2012](https://www.usenix.org/conference/nsdi12/technical-sessions/presentation/zaharia)). O recorde do Daytona GraySort de 2014, com 100 TB ordenados três vezes mais rápido que o Hadoop e com dez vezes menos máquinas, foi feito **em SSD, não em memória**. Cache em RAM domina o ganho só em cargas iterativas; em ETL de uma passada, espere de 2x a 10x.
+A contribuição do paper de RDDs não é "usar RAM", é tolerância a falhas sem replicação: cada RDD guarda o grafo de linhagem, e a partição perdida é recomputada a partir dos pais ([Zaharia et al., NSDI 2012](https://www.usenix.org/conference/nsdi12/technical-sessions/presentation/zaharia)). O recorde do Daytona GraySort de 2014, com 100 TB ordenados três vezes mais rápido que o Hadoop e com dez vezes menos recursos, que é a palavra do livro, foi feito **em SSD, não em memória**. Cache em RAM domina o ganho só em cargas iterativas; em ETL de uma passada, espere de 2x a 10x.
 
 ---
 
 ### Pergunta 2 - RDD ainda faz sentido em 2026?
 
-> "Os livros tratam RDD como API de baixo nível que raramente se usa, mas todo DataFrame vira RDD no plano físico. Quais são os casos residuais em que descer para RDD é a resposta certa hoje? E o Spark Connect não fecha essa porta de vez, já que não expõe `SparkContext`?"
+> "Sobre o papel do RDD os dois livros discordam, e o Damji discorda de si mesmo: o Luu 1 diz que é a abstração-chave que todo usuário deve aprender, e é RDD que está no único exemplo de código do capítulo; o Damji 2 diz que desde o 2.x virou API de baixo nível, e o exemplo completo dele não usa RDD e diz isso nos comentários; e o Damji 1 lista RDD, DataFrame e Dataset como três APIs entre as quais se escolhe conforme a tarefa. Quais são os casos residuais em que descer para RDD é a resposta certa hoje? E o Spark Connect não fecha essa porta de vez, já que não expõe `SparkContext`?"
 
-**Por que é boa:** liga uma afirmação dos livros a uma mudança arquitetural posterior a eles e força uma posição sobre obsolescência real.
+**Por que é boa:** transforma uma divergência da bibliografia em pergunta de currículo, e força uma posição sobre obsolescência real em vez de opinião sobre estilo.
 
 **Resposta que você já deve saber:** os casos residuais são poucos: controle muito fino de particionamento, dados sem schema possível, e algoritmos iterativos que não se expressam em operações relacionais. Para o resto o Catalyst ganha, porque enxerga a intenção em vez de uma função opaca.
 
-O Connect empurra isso adiante. O cliente fala gRPC com um driver remoto e não tem `SparkContext`, então `sc.parallelize`, accumulators antigos e qualquer estado local da JVM deixam de existir. Registre o dado atualizado: o Connect não é mais experimental, tem cliente Python leve (`pip install pyspark-client`, cerca de 1,5 MB) e ganhou paridade de API no 4.x, mas o modo padrão **continua sendo o Classic**. O default de `spark.api.mode` é `classic`, a menos que `SPARK_CONNECT_MODE=1` esteja setado ([Spark Connect Overview](https://spark.apache.org/docs/latest/spark-connect-overview.html)).
+O Connect empurra isso adiante. O cliente fala gRPC com um driver remoto e não tem `SparkContext`, então `sc.parallelize`, accumulators antigos e qualquer estado local da JVM deixam de existir. Registre o dado atualizado: o Connect não é mais experimental, tem cliente Python leve (`pip install pyspark-client`, cerca de 1,7 MB) e ganhou paridade de API no 4.x, mas o modo padrão **continua sendo o Classic**. O default de `spark.api.mode` é `classic`, a menos que `SPARK_CONNECT_MODE=1` esteja setado ([Spark Connect Overview](https://spark.apache.org/docs/latest/spark-connect-overview.html)).
 
 ---
 
 ### Pergunta 3 - Onde a unificação vaza
 
-> "O capítulo 1 do Damji vende o motor unificado como batch, streaming, SQL e ML na mesma engine. Onde essa unificação vaza? Quais operações mudam de semântica ou simplesmente não existem quando eu movo o mesmo código de batch para Structured Streaming?"
+> "O capítulo 1 do Damji vende o motor unificado com quatro componentes, e grafo é um deles: o texto do prêmio de 2016 diz que o Spark substitui os motores separados de batch, grafo, stream e query. Onde essa unificação vaza? Quais operações mudam de semântica ou simplesmente não existem quando eu movo o mesmo código de batch para Structured Streaming?"
 
 **Por que é boa:** pega a tese central do capítulo e pede o contra-exemplo, que é onde está o aprendizado.
 
@@ -75,9 +75,9 @@ Há um vazamento maior, no nível de motor. Os próprios autores do paper do CAC
 
 ### Pergunta 4 - Topologia e quem morre com a conexão
 
-> "No capítulo 2 do Luu, `local[*]`, client mode e cluster mode aparecem quase como variações de invocação. Do ponto de vista de onde o meu processo roda e de quem morre quando eu perco a conexão, qual é a diferença real, e onde o Spark Connect entra nesse quadro?"
+> "Client mode e cluster mode aparecem uma vez só nos quatro capítulos, na Tabela 1-1 do Damji 1, como duas linhas presas ao YARN, e a diferença fica implícita na coluna de onde o driver roda: o texto nunca a diz em palavras. O Luu não toca no assunto, e `local[*]` só aparece dentro dos banners de shell. Do ponto de vista de onde o meu processo roda e de quem morre quando eu perco a conexão, qual é a diferença real entre os três, e onde o Spark Connect entra nesse quadro?"
 
-**Por que é boa:** reformula uma seção de "como executar" em pergunta de topologia, que é o ângulo de quem vai para produção.
+**Por que é boa:** nomeia uma lacuna real da bibliografia em vez de atribuir a ela uma seção que não existe, e move a conversa de "como executar" para topologia, que é o ângulo de quem vai para produção.
 
 **Resposta que você já deve saber:** em `local[*]`, driver e executores são threads de uma JVM só, sem rede, sem serialização real e sem shuffle distribuído. Isso ensina sintaxe e esconde o que vai custar caro: `collect()` funciona porque tudo está no mesmo processo, e listar cem mil arquivos não dói porque o disco local responde na hora. Em client mode o driver roda na sua máquina, então perder a conexão mata o job; é obrigatório para shells interativos, porque o REPL precisa do driver local. Em cluster mode o driver roda dentro do cluster e você pode fechar o terminal.
 
@@ -99,7 +99,7 @@ Só compactar upstream ataca a causa. Mire arquivos entre 128 MB e 1 GB e trate 
 
 ### Pergunta 6 - Schema inference, contrato e o tipo VARIANT
 
-> "Lazy evaluation tem um custo que os livros não destacam: `read.json()` sem schema dispara um job completo só para inferir, e a inferência é instável quando as fontes divergem. Quando vale inferir uma vez e versionar o schema, e quando o tipo VARIANT do Spark 4 é melhor do que qualquer schema fixo?"
+> "Lazy evaluation tem um custo que os livros não destacam, e o Damji 2 dá o exemplo contra si mesmo: define avaliação preguiçosa como adiar até uma ação ser invocada **ou o dado ser tocado, lido do disco ou escrito nele**, e duas páginas depois lista `read()` como uma das duas transformações do exemplo. Na prática `read.json()` sem schema dispara um job completo só para inferir, e a inferência é instável quando as fontes divergem. Quando vale inferir uma vez e versionar o schema, e quando o tipo VARIANT do Spark 4 é melhor do que qualquer schema fixo?"
 
 **Por que é boa:** mostra que você entendeu que lazy não é grátis, e traz uma feature posterior aos livros.
 
@@ -111,7 +111,7 @@ VARIANT, GA na linha 4.x com shredding, é a resposta quando o payload é genuin
 
 ### Pergunta 7 - O que o AQE não resolve
 
-> "O AQE está ligado por padrão desde o Spark 3.2 e costuma ser apresentado como quem resolve os problemas de particionamento. Minha leitura é que ele age apenas depois do shuffle, com estatísticas de runtime, e não faz nada pelo particionamento de leitura nem por skew de custo dentro de uma task. Está correto?"
+> "O Luu 1 é o único dos quatro capítulos que fala de AQE, e lista três coisas que ele faz: trocar estratégia de join dinamicamente, otimizar skew join e ajustar o número de partições. Minha leitura é que as três acontecem depois do shuffle, com estatísticas de runtime, e que ele não faz nada pelo particionamento de leitura nem por skew de custo dentro de uma task. Está correto? O capítulo também não diz se ele vem ligado, e isso mudou no 3.2."
 
 **Por que é boa:** traz hipótese específica e falseável, em vez de "o que é AQE", que é pergunta de slide.
 
@@ -177,11 +177,45 @@ Existem duas saídas honestas. Tornar a partição idempotente com overwrite din
 
 **Por que é boa:** é a pergunta que alguém precisa responder para a gestão antes de aprovar a adoção, e exige que o professor admita os limites da disciplina.
 
-**Resposta que você já deve saber:** comece pela evidência, porque ela é contraintuitiva. O estudo da Microsoft Research de 2013 analisou 174 mil jobs de produção e achou mediana de input abaixo de 14 GB ([Nobody ever got fired for buying a cluster](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/msrtr-2013-2.pdf)). O RedSet, da AWS, analisou meio bilhão de queries do Redshift: 75% escaneiam menos de 1 GB, e só três em cada dez mil passam de 10 TB ([PVLDB vol. 17](https://www.vldb.org/pvldb/vol17/p3694-saxena.pdf)). Enquanto isso, o que cabe numa máquina cresceu duas ordens de magnitude, com instâncias EC2 chegando a 32 TiB de RAM.
+**Resposta que você já deve saber:** comece pela evidência, porque ela é contraintuitiva. O estudo da Microsoft Research de 2013 analisou 174 mil jobs de produção e achou mediana de input abaixo de 14 GB ([Nobody ever got fired for buying a cluster](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/msrtr-2013-2.pdf)). A AWS publicou o Redset, dataset anonimizado da frota do Redshift ([PVLDB vol. 17](https://www.vldb.org/pvldb/vol17/p3694-saxena.pdf)), e a MotherDuck o analisou ([Redshift Files](https://motherduck.com/blog/redshift-files-hunt-for-big-data/)): 75% das queries escaneiam menos de 1 GB, e as acima de 10 TB ficam na casa de uma em mil. O dado é da AWS, a leitura é de quem vende single-node, e vale dizer isso ao citar. Enquanto isso, o que cabe numa máquina cresceu duas ordens de magnitude, com instâncias EC2 chegando a 32 TiB de RAM.
 
 O Spark ganha quando o dado é semi-estruturado ou binário e precisa de código imperativo antes de virar tabela, que é exatamente PDF, HTML e parsing complexo; quando o perfil é write-heavy, com MERGE, compactação e backfill; quando o job dura horas e recomeçar do zero é inaceitável, porque linhagem, spill e retry são o seguro que você paga o ano inteiro e usa no dia do incidente; e acima de 8 a 16 vCores de paralelismo útil, ponto em que a economia de escala inverte a favor dele.
 
 É erro quando o trabalho é SQL analítico sobre dado limpo e tabelado, quando o volume cabe numa máquina, e quando não há quem opere o cluster, porque o custo dominante do Spark é operacional e cognitivo. No benchmark do Coiled, os autores gastaram mais tempo ajustando Spark do que todos os outros sistemas somados ([TPC-H comparison](https://docs.coiled.io/blog/tpch.html)). A síntese defensável é híbrida: Spark para ELT distribuído e carga write-heavy, single-node para exploração e manutenção leve.
+
+---
+
+### Perguntas que a leitura completa acrescentou
+
+Estas três não vieram do aprofundamento e sim do registro de leitura, depois que os quatro capítulos foram auditados linha a linha. Cada uma nasce de uma contradição interna da bibliografia, então a fonte é o próprio material da aula.
+
+### Pergunta 13 - Modo local não é modo standalone (nível 1)
+
+> "O Damji 2 abre dizendo que o capítulo inteiro roda em local mode, e no Passo 3 escreve que você instalou o Spark no laptop em standalone mode. A Tabela 1-1 do capítulo 1 trata os dois como linhas distintas, e ainda diz que em modo local o cluster manager roda no mesmo host, quando em modo local não existe cluster manager nenhum. Qual é a diferença real entre os dois, e o que o `local[*]` faz que o standalone de uma máquina só não faz?"
+
+**Por que é boa:** é confusão de vocabulário que a turma inteira vai carregar para o resto do curso, e está no capítulo mais lido dos quatro. Custa dois minutos de aula e conserta o modelo mental de todo mundo.
+
+**Resposta que você já deve saber:** em `local[*]` não há cluster manager, não há processo de executor separado e não há rede: driver e executores são threads de uma JVM única, e o asterisco pede uma thread por core disponível. O standalone é um cluster manager de verdade, o que vem na caixa do Spark, com master e workers como processos, e roda numa máquina só ou em cem. A célula da Tabela 1-1 foi preenchida por simetria e inventa uma peça. A consequência prática é que tudo que quebra em cluster (serialização, shuffle pela rede, `collect()` estourando o driver) não aparece em modo local.
+
+---
+
+### Pergunta 14 - Bytecode idêntico e a fronteira do PySpark (nível 2)
+
+> "O Damji 1 afirma que o mesmo trecho escrito em Python, R ou Java gera bytecode idêntico e entrega a mesma performance. Minha leitura é que isso vale para expressão nativa de DataFrame, que vira o mesmo plano em qualquer linguagem, e deixa de valer no instante em que entra uma UDF em Python, que atravessa a fronteira JVM/Python. Está correto? E qual é o custo dessa travessia hoje, com Arrow no caminho?"
+
+**Por que é boa:** a ressalva ausente é justamente a que decide performance em PySpark, que é a linguagem de quase todo mundo na sala, e o livro usa a afirmação como prova de que a escolha de linguagem é indiferente.
+
+**Resposta que você já deve saber:** para expressão nativa a afirmação se sustenta, porque a API de DataFrame em qualquer linguagem produz o mesmo plano lógico e o Catalyst gera o mesmo código. Com UDF Python o dado sai da JVM, é serializado, atravessa para um processo Python do executor e volta, e nada disso é visível para o Catalyst, que trata a função como caixa preta e perde pushdown e codegen no ponto. Arrow reduz o custo de serialização, não elimina a travessia nem devolve a visibilidade ao otimizador. E o processo Python vive fora da heap da JVM, em `spark.executor.memoryOverhead`. Paridade de capacidade existe; de assinatura, não: o próprio capítulo 2 escreve `show(10, false)` contra `show(10, truncate=False)` e `col("State") === "CA"` contra `mnm_df.State == "CA"`.
+
+---
+
+### Pergunta 15 - Um executor por nó (nível 3)
+
+> "O Damji 1 afirma que, na maioria dos modos de deployment, roda um único executor por nó. A própria Tabela 1-1 não sustenta isso: só a linha do standalone fala em uma JVM de executor por nó, e as de YARN e Kubernetes não dizem nada sobre quantidade. Na prática, como o senhor dimensiona isso? Um executor gordo por nó ou vários magros, e qual é o critério, GC, paralelismo ou memória por task?"
+
+**Por que é boa:** é a decisão de dimensionamento que a bibliografia despacha em uma frase e que aparece no primeiro dia de operação real. Força o professor a dar um critério, não uma definição.
+
+**Resposta que você já deve saber:** a afirmação é do livro, não da prática. O padrão comum é vários executores por nó, dimensionados para algo em torno de cinco cores cada, porque a vazão de I/O por executor satura e porque heap muito grande piora pausa de GC. Executor gordo desperdiça paralelismo e concentra risco: se ele morre, o nó inteiro reexecuta. Executor magro multiplica a memória de overhead fixa e o custo de broadcast, que é replicado por executor. Em Kubernetes a conta muda de nome mas não de natureza: o limite é o pod, e sobra o mesmo trade-off entre cores por pod e pods por nó.
 
 ---
 
@@ -216,7 +250,7 @@ Perguntas que surgiram parte por parte durante o aprofundamento, antes da curado
 
 Ancoradas em fonte, ordenadas da mais construtiva para a mais afiada.
 
-1. O paper de RDDs vende até 100x sobre MapReduce, mas o recorde do GraySort em 2014 foi em SSD, não em memória. Que parte do ganho é a linhagem evitando replicação e que parte é apenas "estar na RAM"?
+1. O 100x sobre MapReduce é número do site do projeto, repassado pelo Luu 1; o Damji 1 atribui aos artigos iniciais uma faixa bem menor, de 10 a 20 vezes, e o recorde do GraySort em 2014 foi em SSD, não em memória. Que parte do ganho é a linhagem evitando replicação e que parte é apenas "estar na RAM"?
 2. O estudo da Microsoft Research de 2013 já mostrava mediana de job abaixo de 14 GB, um ano depois do paper de RDDs. Por que a indústria adotou scale-out em massa com essa evidência disponível desde o início?
 3. Se o motor unificado é a tese central do artigo de 2016, por que a Databricks reescreveu a execução do Spark SQL em C++ fora da JVM com o Photon? A unificação sobreviveu na API ou no motor?
 4. A documentação do Spark 4.2.0 ainda precisa afirmar que a MLlib não está deprecada. Sem primitivas de GPU e com Ray dominando treino distribuído, a MLlib ainda faz parte da proposta de valor?
@@ -237,7 +271,7 @@ Ancoradas em fonte, ordenadas da mais construtiva para a mais afiada.
 Três coisas que valem virar pergunta ao professor, porque são exatamente os pontos onde o material oficial e a realidade de 2026 divergem:
 
 1. Se o AQE está ligado por padrão desde o 3.2 e resolve coalescing, conversão de join e skew, o que sobrou de tuning manual que ainda vale a pena ensinar em 2026?
-2. Os livros ensinam DPP como recurso do Spark, mas as três condições de ativação quase nunca são verificadas na prática. Como se checa, no plano físico, se o DPP de fato ocorreu?
+2. O Luu 1 apresenta o DPP como uma das três features do 3.0, e o Damji não menciona nem DPP nem AQE em nenhum dos dois capítulos. As três condições de ativação do DPP quase nunca são verificadas na prática. Como se checa, no plano físico, se o DPP de fato ocorreu?
 3. Se a tese do paper de 2016 é o motor unificado, e a Databricks reescreveu a execução em C++ fora da JVM com o Photon, a unificação sobreviveu na API ou no motor?
 
 ---

@@ -8,3 +8,6 @@ venv/
 spark-warehouse/
 metastore_db/
 derby.log
+
+# capitulos de livro: material licenciado, nao vai para repo publico
+*.pdf

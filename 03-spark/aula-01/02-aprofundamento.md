@@ -31,7 +31,7 @@ As cinco partes têm propósitos diferentes. Para **entender o motor**, leia 1, 
 | [4. Montando o ambiente em 2026](#parte-4---montando-o-ambiente-em-2026) | versões e requisitos atuais; pip/uv, Docker, Spark Connect; o que a Databricks Free Edition tem e não tem; smoke tests |
 | [5. O que mudou desde os livros](#parte-5---o-que-mudou-desde-os-livros) | releases 3.2 a 4.2; AQE e skew join em profundidade; DPP; Spark 4 item por item; Photon |
 
-As perguntas que nasceram deste aprofundamento estão em [03-aula.md](03-aula.md), junto com as perguntas preparadas para a aula ao vivo.
+Este documento é a segunda etapa do método. A primeira etapa é o [guia de leitura](01-pre-aula.md), com as perguntas a responder lendo os capítulos; o registro do que eles de fato dizem está no [gabarito](01-gabarito.md), com 55 dúvidas numeradas e sete divergências entre Luu e Damji; a seção final dele, "O que fica para o aprofundamento", lista as perguntas que este texto responde. As perguntas que nasceram daqui estão em [03-aula.md](03-aula.md), junto com as preparadas para a aula ao vivo, e o artefato que fecha o ciclo em [04-pos-aula.md](04-pos-aula.md).
 
 ---
 
@@ -64,11 +64,11 @@ A diferença é uma só: **onde o driver roda**.
 | Latência driver/executores | atravessa a rede corporativa | dentro do cluster |
 | Uso típico | shells interativos, notebooks | produção, jobs agendados |
 
-Shell interativo **exige** client mode: o REPL precisa do driver local. Produção usa cluster mode. Se o seu job faz `collect()` de algo grande em client mode, os dados atravessam a VPN até a sua máquina. Referência: [Cluster Mode Overview](https://spark.apache.org/docs/latest/cluster-overview.html).
+A bibliografia não diz isso em lugar nenhum: client e cluster mode aparecem só como duas linhas da Tabela 1-1 do Damji 1, presas ao YARN, e a diferença fica implícita na coluna do driver. O Luu não menciona nenhum dos dois. Shell interativo **exige** client mode: o REPL precisa do driver local. Produção usa cluster mode. Se o seu job faz `collect()` de algo grande em client mode, os dados atravessam a VPN até a sua máquina. Referência: [Cluster Mode Overview](https://spark.apache.org/docs/latest/cluster-overview.html).
 
 #### SparkSession e SparkContext
 
-O `SparkContext` é a conexão de baixo nível com o cluster. Ele instancia o `DAGScheduler`, o `TaskScheduler` e o `SchedulerBackend`. Só pode existir um ativo por JVM. O `SparkSession` (Spark 2.0 em diante) é o ponto de entrada unificado que absorveu `SQLContext` e `HiveContext`, dono do catálogo, do parser SQL e do Catalyst. Ele cria ou reusa um `SparkContext` internamente, acessível via `spark.sparkContext`.
+O `SparkContext` é a conexão de baixo nível com o cluster. Ele instancia o `DAGScheduler`, o `TaskScheduler` e o `SchedulerBackend`. Só pode existir um ativo por JVM. O `SparkSession` (Spark 2.0 em diante) é o ponto de entrada unificado que absorveu `SQLContext` e `HiveContext`, dono do catálogo, do parser SQL e do Catalyst. Ele cria ou reusa um `SparkContext` internamente, acessível via `spark.sparkContext`. Vale saber que a bibliografia erra aqui: o Damji 1 escreve que no shell a `SparkSession` é acessível pela variável global `spark` **ou** `sc`, e o banner do capítulo 2 do próprio livro desmente isso separando os dois objetos; o Luu 1 apoia o word count em `sc.textFile(...)` sem apresentar o `sc` e sem escrever a palavra `SparkContext` uma vez sequer.
 
 ```python
 from pyspark.sql import SparkSession
@@ -81,7 +81,7 @@ spark = (SparkSession.builder
 sc = spark.sparkContext  # só desça aqui para RDD, broadcast, checkpointDir, setLogLevel
 ```
 
-**O que os livros não cobrem.** Desde o Spark 3.4 existe o **Spark Connect**, uma arquitetura cliente-servidor onde o cliente só envia o plano (protobuf sobre gRPC) e não hospeda mais um driver JVM local. No Spark 4.x ele amadureceu bastante: cliente Python leve (`pip install pyspark-client`, cerca de 1,5 MB contra centenas de MB do `pyspark` completo), paridade de API no cliente Java, Spark ML on Connect declarado GA no cliente Python no 4.1.0. Duas ressalvas importantes: **o modo padrão continua sendo o Spark Classic** (`spark.api.mode=classic`, a menos que `SPARK_CONNECT_MODE=1` esteja setado), e `SparkContext` e a API de RDD **não são acessíveis via Connect**. Isso significa que, com Connect, o seu código está restrito a DataFrame/SQL por construção. Referência: [Spark Connect Overview](https://spark.apache.org/docs/latest/spark-connect-overview.html).
+**O que os livros não cobrem.** Desde o Spark 3.4 existe o **Spark Connect**, uma arquitetura cliente-servidor onde o cliente só envia o plano (protobuf sobre gRPC) e não hospeda mais um driver JVM local. No Spark 4.x ele amadureceu bastante: cliente Python leve (`pip install pyspark-client`, cerca de 1,7 MB contra centenas de MB do `pyspark` completo), paridade de API no cliente Java, Spark ML on Connect declarado GA no cliente Python no 4.1.0. Duas ressalvas importantes: **o modo padrão continua sendo o Spark Classic**, e `SparkContext` e a API de RDD **não são acessíveis via Connect**, o que a documentação afirma com todas as letras. Isso significa que, com Connect, o seu código está restrito a DataFrame/SQL por construção. A chave que troca os dois é `spark.api.mode`, documentada em [Application Development with Spark Connect](https://spark.apache.org/docs/latest/app-dev-spark-connect.html); o valor default `classic` não aparece em nenhuma página oficial, só em discussão da lista de desenvolvimento, então trate o número como bem apoiado mas não citável. Referência do resto: [Spark Connect Overview](https://spark.apache.org/docs/latest/spark-connect-overview.html).
 
 ---
 
@@ -269,7 +269,7 @@ Anote estes pontos, porque eles mudam o que você lê nos capítulos:
 
 - **Versão.** A estável é a 4.2.0 (14/07/2026). Existem três ramos 4.x ativos (4.0.x, 4.1.x, 4.2.x) e o 3.5.x ainda recebe patches (3.5.9 em 16/07/2026). Fonte: [downloads](https://spark.apache.org/downloads.html).
 - **Runtime.** Spark 4.x roda em **Java 17, 21 ou 25**, **Scala 2.13** (o 2.12 foi removido no 4.0.0) e **Python 3.10 ou superior**. Qualquer tutorial mandando instalar Java 8 está velho. SparkR está marcado como deprecated.
-- **AQE ligado por padrão** desde o 3.2. Boa parte do tuning manual de `spark.sql.shuffle.partitions` que os livros ensinam foi absorvida pelo runtime.
+- **AQE ligado por padrão** desde o 3.2. O Luu 1 descreve o mecanismo e para aí; o Damji nem cita. Boa parte do tuning manual de partição que a literatura da época ensinava foi absorvida pelo runtime.
 - **UDFs Python otimizadas com Arrow vêm habilitadas por padrão no 4.2.0** (SPARK-54555). No plano, uma `@udf` comum agora aparece como `ArrowEvalPython` em vez de `BatchEvalPython`. Continua sendo uma fronteira de codegen, mas o custo caiu bastante.
 - **Databricks Community Edition não existe mais** desde 1º de janeiro de 2026. A oferta gratuita é a **Free Edition**, que é **serverless-only** (sem clusters clássicos configuráveis), só Python e SQL (sem Scala e sem R), com um workspace e um metastore Unity Catalog por conta. Para Structured Streaming, só `Trigger.AvailableNow()`; trigger contínuo falha com `INFINITE_STREAMING_TRIGGER_NOT_SUPPORTED`. Se o professor sugerir Community Edition, esse é um bom ponto para levantar na aula. Fonte: [Free Edition limitations](https://docs.databricks.com/aws/en/getting-started/free-edition-limitations).
 
@@ -302,7 +302,7 @@ Marque cada item respondendo em voz alta, sem olhar o texto.
 
 ### 1. O problema que o MapReduce não resolvia
 
-Os capítulos que o professor mandou ler dizem que o MapReduce era lento e que o Spark é rápido. Isso está certo e é inútil. O argumento técnico de verdade é mais específico, e é ele que você precisa levar para a aula.
+O Luu 1 diz que o MapReduce era lento e que o Spark é rápido, e para aí. O Damji 1 vai bem mais longe: nomeia quatro deficiências do Hadoop (operação difícil, API verbosa, I/O de disco repetido entre pares de tarefas MR, e não servir para outras cargas) e desenha a terceira na Figura 1-1. O que falta nos dois é o passo seguinte, e é ele que você precisa levar para a aula: **por que** materializar em disco entre estágios mata carga iterativa, e o que exatamente o RDD comprou em troca.
 
 O MapReduce, publicado pelo Google em 2004 e reimplementado como Hadoop a partir de 2006, resolveu um problema real: rodar computação tolerante a falhas sobre milhares de máquinas de commodity. O modelo é rígido de propósito. Você tem `map`, você tem `reduce`, e entre os dois há um shuffle. A tolerância a falhas vem de uma regra simples: **cada estágio materializa seu resultado no sistema de arquivos distribuído**. Se um nó cai, o próximo estágio relê do HDFS e a computação continua.
 
@@ -342,7 +342,7 @@ Guarde isso: **a contribuição do RDD é a linhagem, não a memória**. A memó
 
 ### 3. A tese do motor unificado: o que ela de fato entrega
 
-Em novembro de 2016, o mesmo grupo publicou na Communications of the ACM o artigo [*Apache Spark: A Unified Engine for Big Data Processing*](https://dl.acm.org/doi/10.1145/2934664). É o texto que os livros do professor parafraseiam. O argumento tem duas pernas.
+Em novembro de 2016, o mesmo grupo publicou na Communications of the ACM o artigo [*Apache Spark: A Unified Engine for Big Data Processing*](https://dl.acm.org/doi/10.1145/2934664). É o texto por trás do "prestigioso prêmio da ACM" que o Damji 1 cita sem nomear o prêmio, o comitê nem o veículo; o Luu 1 aponta para outros dois artigos e nunca chega a este. O argumento tem duas pernas.
 
 **Perna teórica.** MapReduce, somado a compartilhamento eficiente de dados entre rodadas, consegue emular qualquer computação distribuída, encadeando rodadas de computação local com comunicação all-to-all. As duas barreiras práticas eram exatamente o compartilhamento de estado e a latência por rodada. Os RDDs resolvem a primeira; o Spark reduz a segunda a cerca de 100 ms por passo. Logo, um motor só pode cobrir batch, SQL, streaming e ML.
 
@@ -391,7 +391,7 @@ Não é opinião de vendedor. São três estudos independentes, separados por tr
 
 **Jordan Tigani, 2023.** [*Big Data is Dead*](https://motherduck.com/blog/big-data-is-dead/), escrito por um engenheiro fundador do BigQuery. Entre clientes que gastavam mais de mil dólares por ano, **90% das queries processavam menos de 100 MB**. O argumento estrutural dele é melhor que o número: **storage e compute crescem de forma assimétrica**. Um cliente foi de 100 TB para 30 PB e o compute mal se moveu, porque quase toda query toca dado recente. Um mês recente pode ser 5% do volume e 80% dos acessos.
 
-**RedSet / VLDB 2024.** O dado mais forte, e o mais interessante porque é da **AWS**, não de fornecedor de small data. [*Why TPC is Not Enough: An Analysis of the Amazon Redshift Fleet*](https://www.vldb.org/pvldb/vol17/p3694-saxena.pdf) analisou **meio bilhão de queries** reais em três meses:
+**RedSet, VLDB 2024, lido pela MotherDuck.** Aqui é preciso separar duas coisas que costumam ser citadas como uma. O paper [*Why TPC is Not Enough: An Analysis of the Amazon Redshift Fleet*](https://www.vldb.org/pvldb/vol17/p3694-saxena.pdf), da **AWS**, analisa a frota do Redshift e **publica** o dataset anonimizado Redset, que ele descreve como cerca de **69 milhões de queries** de 200 clusters serverless e 200 provisionados ao longo de três meses de 2024. A tabela de bytes escaneados abaixo **não está no paper**: ela vem da análise que a MotherDuck fez do dataset publicado ([Redshift Files: the Hunt for Big Data](https://motherduck.com/blog/redshift-files-hunt-for-big-data/), que descreve o Redset como meio bilhão de queries sobre 32 milhões de tabelas). Ou seja, o dado é da AWS, a leitura é da MotherDuck:
 
 | Bytes escaneados por query | Percentual das queries |
 |---|---|
@@ -400,9 +400,9 @@ Não é opinião de vendedor. São três estudos independentes, separados por tr
 | 10 a 100 GB | 4,1% |
 | 100 GB a 1 TB | 1,1% |
 | 1 a 10 TB | 0,21% |
-| mais de 10 TB | 0,03% |
+| mais de 10 TB | entre 0,03% e 0,10% |
 
-Três em cada dez mil queries passam de 10 TB. Mesmo em organizações **com tabelas na casa dos terabytes**, a query mediana sobre uma tabela de 10 a 100 TB escaneia **0,045% dela**.
+A última linha é a única que não fecha: a tabela da MotherDuck traz **0,10%** e o texto do mesmo material cita **0,03%** em outro ponto. Use a ordem de grandeza, que é o que importa (queries acima de 10 TB são raridade estatística), e **não** cite "três em cada dez mil" como número fechado. Mesmo em organizações com tabelas na casa dos terabytes, a query mediana sobre uma tabela de 10 a 100 TB escaneia cerca de **0,045% dela**.
 
 #### 4.2 O que "cabe numa máquina" cresceu duas ordens de magnitude
 
@@ -430,7 +430,7 @@ Esta seção é a que separa crítica inteligente de cinismo. Se você levar só
 
 1. **Bytes escaneados não são o working set.** O RedSet mede **scan**. Um join que lê 50 GB pode materializar shuffle de duas ou três vezes o input. A estatística não captura a pressão de memória do estágio mais largo, que é exatamente onde o single-node quebra.
 2. **A evidência é de leitura; a força do Spark é escrita.** Os três estudos medem queries analíticas. O caso mais forte do Spark é ELT **write-heavy**: MERGE, compaction, backfill, reprocessamento de histórico. No benchmark de Cole, a 100 GB, o Spark foi **mais de 2x mais rápido** que o DuckDB em "ler Parquet e escrever Delta" e cerca de 2x mais rápido em MERGE. Os dois lados do debate não estão medindo a mesma coisa.
-3. **Conflito de interesse.** Tigani é CEO da MotherDuck, que vende DuckDB gerenciado. O argumento dele é bom apesar disso, e a evidência mais forte (RedSet) vem da AWS, o que sustenta a tese independentemente do vendedor.
+3. **Conflito de interesse, e ele é maior do que parece.** Tigani é CEO da MotherDuck, que vende DuckDB gerenciado. O que é da AWS é o **dataset** e o paper da frota do Redshift; a leitura small data dele, incluindo a tabela de bytes escaneados, é **da MotherDuck**. Não dá para dizer que a evidência mais forte sustenta a tese independentemente do vendedor: o dado é independente, a interpretação não. O que continua valendo é que os números brutos são auditáveis, porque o dataset é público.
 4. **Você dimensiona pela cauda, não pela mediana.** Se 0,2% dos seus jobs precisam de cluster e você não tem cluster, esses jobs simplesmente não rodam. A pergunta certa não é "qual o tamanho mediano" e sim "qual o custo de manter dois caminhos de execução".
 5. **Concorrência é um eixo separado de volume.** O DuckDB tem modelo de escritor único e execução single-node. Acima de umas 20 queries concorrentes, ele não é opção, mesmo que cada query toque 200 MB.
 6. **O Spark não morre.** No benchmark de Cole, a 100 GB, o DuckDB deu OOM com 2 vCores e o Polars deu OOM com 2, 4 e 8 vCores. O Spark **não falhou em nenhuma configuração**. Linhagem, spill e retry são o seguro que você paga o ano inteiro e usa no dia do incidente.
@@ -833,17 +833,17 @@ Versões mínimas no 4.2: pandas 2.2.0 e PyArrow 18.0.0.
 
 ### 0. Por que você não deve seguir os capítulos ao pé da letra
 
-Os dois livros da aula 1 são bons, mas foram escritos contra o Spark 3.0/3.1. O capítulo 2 de "Beginning Apache Spark 3" e a seção "Downloading Apache Spark" do "Learning Spark" 2ª edição descrevem um mundo que não existe mais. Se você seguir as instruções deles literalmente, você monta um ambiente que **não roda o Spark atual**.
+Os dois livros da aula 1 são bons, mas foram escritos contra o Spark 3.0/3.1. O capítulo 2 de "Beginning Apache Spark 3" (*Working with Apache Spark*) e o capítulo 2 de "Learning Spark" 2ª edição (*Downloading Apache Spark and Getting Started*) descrevem um mundo que não existe mais. Se você seguir as instruções deles literalmente, você monta um ambiente que **não roda o Spark atual**.
 
 O que mudou, item por item:
 
-| O que os livros dizem | O que vale em 24/07/2026 |
+| O que os capítulos dizem | O que vale em 24/07/2026 |
 |---|---|
-| Instale o **JDK 8** (ou 11) | Java 8 e 11 foram **removidos** no Spark 4.0. Hoje: **Java 17, 21 ou 25** |
-| Spark é pré-compilado com **Scala 2.12** | Spark 4.x é pré-compilado só com **Scala 2.13**. O 2.12 foi descontinuado |
-| **Python 3.6+** basta | Mínimo é **Python 3.10**. O wheel declara `requires_python >= 3.10` |
-| Baixe o **tarball**, descompacte, configure `SPARK_HOME` | `pip install pyspark` já entrega tudo, inclusive `spark-submit`. Tarball só quando você precisa dos scripts de cluster |
-| Use a **Databricks Community Edition** para praticar de graça | A **Community Edition morreu em 01/01/2026**. Existe a **Free Edition**, que é outro produto, com outra arquitetura |
+| Damji 2: "Java 8 ou superior", com `JAVA_HOME` setado. Luu 2: três versões em três páginas ("basta ter Java", Java 11 preferido para o shell Scala, Python 3.7.x para o `pyspark`) | Java 8 e 11 foram **removidos** no Spark 4.0. Hoje: **Java 17, 21 ou 25** |
+| Nenhum declara versão de Scala como requisito: ela só aparece em captura de tela (2.12.10 nos banners, e uma nota do site já errada dizendo 2.11) e no `build.sbt` do Damji | Spark 4.x é pré-compilado só com **Scala 2.13**. O 2.12 foi removido no 4.0 |
+| Luu 2 exige **Python 3.7.x ou superior** para o `pyspark`; Damji 2 não declara requisito e roda 3.7.3 nos banners | Mínimo é **Python 3.10**. O wheel declara `requires_python >= 3.10` |
+| Luu 2 só ensina tarball. Damji 2 já traz `pip install pyspark` do PyPI, disponível desde o Spark 2.2, com os extras `[sql,ml,mllib]` | `pip install pyspark` entrega tudo, inclusive `spark-submit`. Tarball só quando você precisa dos scripts de cluster |
+| Os dois recomendam a **Databricks Community Edition**: Luu 2 dedica um terço do capítulo a ela, Damji 2 traz um boxe | A **Community Edition morreu em 01/01/2026**. Existe a **Free Edition**, que é outro produto, com outra arquitetura |
 | Arquitetura: driver + cluster manager + executors, ponto | Existe agora um **segundo modo de operação**: Spark Connect, cliente e servidor separados por gRPC |
 
 Guarde esta ideia: os livros ensinam bem o **modelo mental** (RDD, DataFrame, driver, executor, lazy evaluation, DAG). Você deve ler os capítulos para isso. Mas as **instruções operacionais** deles estão vencidas, e é este documento que você segue ao teclado.
@@ -964,7 +964,7 @@ pip install "pyspark[sql,connect]==4.2.0"
 
 #### 2.3 O que o wheel traz e o que não traz
 
-O wheel do PySpark **embarca a distribuição Spark inteira**: os JARs ficam em `site-packages/pyspark/jars/`, e você ganha `spark-submit`, `spark-shell` e `pyspark` no `PATH` do ambiente. Isso é o que torna obsoleto o ritual de baixar tarball dos livros.
+O wheel do PySpark **embarca os JARs do Spark**, em `site-packages/pyspark/jars/`, e põe `spark-submit`, `spark-shell` e `pyspark` no `PATH` do ambiente. Não é a distribuição inteira: a própria página do PyPI avisa que o pacote serve para interagir com um cluster existente e **não traz as ferramentas para subir um cluster standalone**, ou seja, os scripts de `sbin/`. Para isso, tarball. Isso torna obsoleto o ritual de tarball do Luu 2. O Damji 2 já apontava para cá: ele documenta `pip install pyspark` desde o Spark 2.2. O que mudou é que o wheel deixou de ser atalho para quem só usa Python e virou o caminho principal. Vale dizer o que isto fecha: o Luu 2 abre prometendo três formas de trabalhar com Spark, uma delas a submissão por linha de comando, e `spark-submit` não aparece em nenhuma das 28 páginas do capítulo. Quem entrega é o Damji 2, na última seção.
 
 O que ele **não** traz: a JVM (por isso o passo 1), o Hadoop completo e conectores externos (Kafka, Delta, JDBC). Conectores vêm por `--packages` ou `spark.jars.packages`, sempre com sufixo `_2.13`.
 
@@ -977,7 +977,7 @@ PYSPARK_HADOOP_VERSION=without pip install pyspark     # sem Hadoop empacotado
 
 #### 2.4 O que `local[*]` realmente significa
 
-Aqui os livros ajudam pouco e a confusão é comum. Em modo local **não existe cluster manager, nem master, nem worker separado**. Driver e executor são o **mesmo processo JVM**, e o paralelismo vem de threads.
+Aqui os livros não ajudam: `local[*]` aparece três vezes nos quatro capítulos, todas dentro de banner de subida de shell, e nunca no texto corrido. Nenhum dos dois explica o que o asterisco significa. Em modo local **não existe cluster manager, nem master, nem worker separado**. Driver e executor são o **mesmo processo JVM**, e o paralelismo vem de threads.
 
 | URL de master | Significado |
 |---|---|
@@ -1080,7 +1080,7 @@ O fluxo é este:
 
 #### 4.2 Por que isso importa para você
 
-- **Sem JVM no cliente.** Existe o pacote `pyspark-client` (cerca de 1,5 MB, contra centenas de MB do `pyspark` completo). Ele só fala com um servidor remoto. Imagem de CI enxuta, container de app sem Java.
+- **Sem JVM no cliente.** Existe o pacote `pyspark-client` (cerca de 1,7 MB, contra centenas de MB do `pyspark` completo). Ele só fala com um servidor remoto. Imagem de CI enxuta, container de app sem Java.
 - **Depuração na IDE.** O código do cliente é um processo Python comum: breakpoint no VS Code funciona, sem `spark-submit`.
 - **Isolamento.** Seu app não derruba o driver, e o driver pode ser atualizado sem tocar no app.
 - **O mesmo script roda local ou remoto** trocando só a URL.
@@ -1115,7 +1115,7 @@ Alternativas de ativação, todas equivalentes: variável `SPARK_REMOTE="sc://lo
 
 #### 4.5 O limite que morde
 
-**RDD e `SparkContext` não existem no Connect.** Nada de `spark.sparkContext.parallelize(...)`, nada de `df._jdf` ou `spark._jsc`. Isso tem consequência direta para a disciplina: os capítulos 1 e 2 dos livros ensinam RDD como porta de entrada. Se você estudar RDD dentro de um notebook serverless da Databricks (que é Connect por baixo), **o exemplo do livro falha**. Estude RDD no Spark Classic local, e DataFrame em qualquer um dos dois.
+**RDD e `SparkContext` não existem no Connect.** Nada de `spark.sparkContext.parallelize(...)`, nada de `df._jdf` ou `spark._jsc`. A consequência para a disciplina é mais estreita do que parece: dos quatro capítulos, só o Luu 1 usa RDD, no word count em `sc.textFile(...)`, e é justamente ele que falha em um notebook serverless da Databricks, que é Connect por baixo. O Damji 2 já avisa que desde o 2.x os RDDs foram relegados a API de baixo nível, e o exemplo completo dele não usa nenhum. Estude RDD no Spark Classic local, e DataFrame em qualquer um dos dois.
 
 Há também uma diferença semântica: o Connect **adia a análise** para o momento da execução. `spark.sql("select 1 as a").filter("c > 1")` não estoura na hora no Connect; o erro só aparece quando você chama `df.columns`, `df.schema` ou uma ação. Bom saber antes de escrever um `try/except` que nunca dispara.
 
@@ -1125,9 +1125,9 @@ Há também uma diferença semântica: o Connect **adia a análise** para o mome
 
 #### 5.1 A Community Edition acabou
 
-Isto é o mais importante desta seção, porque o livro e boa parte dos tutoriais mandam você criar uma conta CE. **A Community Edition foi aposentada em 1º de janeiro de 2026.** O anúncio oficial diz literalmente que "After that, Community Edition accounts will no longer be accessible", e um community manager confirmou em 09/01/2026 que já estava fora do ar. A ferramenta de migração de um clique também deixou de funcionar depois do prazo. Fonte: [PSA: Community Edition retires on January 1, 2026](https://community.databricks.com/t5/announcements/psa-community-edition-retires-on-january-1-2026-move-to-the-free/td-p/141888).
+Isto é o mais importante desta seção, porque um terço do Luu 2 depende disso: são 23 das 44 figuras do capítulo mostrando a interface da Databricks, mais o boxe do Damji 2 recomendando o mesmo. **A Community Edition foi aposentada em 1º de janeiro de 2026.** O anúncio oficial diz literalmente que "After that, Community Edition accounts will no longer be accessible", e um community manager confirmou em 09/01/2026 que já estava fora do ar. A ferramenta de migração de um clique também deixou de funcionar depois do prazo. Fonte: [PSA: Community Edition retires on January 1, 2026](https://community.databricks.com/t5/announcements/psa-community-edition-retires-on-january-1-2026-move-to-the-free/td-p/141888).
 
-A substituta é a **Databricks Free Edition**, e ela é um produto diferente, não uma CE renomeada. A CE era um cluster de brinquedo de 6 GB, sem Unity Catalog e sem jobs. A Free Edition é a plataforma **em modo serverless, com Unity Catalog obrigatório e cotas**. Fonte: [Free Edition](https://docs.databricks.com/aws/en/getting-started/free-edition).
+A substituta é a **Databricks Free Edition**, e ela é um produto diferente, não uma CE renomeada. A CE era um nó único, sem Unity Catalog e sem jobs: a captura do formulário de criação no Luu 2 mostra `1 Driver: 15.3 GB Memory, 2 Cores`, e o texto do capítulo fala em 15 GB. Brinquedo pelo paralelismo, dois cores, não pela memória. A Free Edition é a plataforma **em modo serverless, com Unity Catalog obrigatório e cotas**. Fonte: [Free Edition](https://docs.databricks.com/aws/en/getting-started/free-edition).
 
 Atenção a uma inconsistência da própria Databricks: a página de docs diz "retired in 2025", enquanto o anúncio fixa 1º de janeiro de 2026. A data operacional correta é **01/01/2026**.
 
@@ -1147,7 +1147,7 @@ A Free Edition é serverless-only e herda todas as limitações do serverless. E
 - **Suportado:** `Trigger.AvailableNow()` (recomendado) e `Trigger.Once()` (deprecado, mas funciona).
 - **Não suportado:** `Trigger.ProcessingTime(interval)` e `Trigger.Continuous(interval)`. A query falha com `INFINITE_STREAMING_TRIGGER_NOT_SUPPORTED`.
 
-O detalhe cruel: se você **não** declarar trigger nenhum, o Spark usa `ProcessingTime("0 seconds")` por padrão. Ou seja, **o código de streaming padrão dos livros falha na Free Edition**. Você é obrigada a escrever `.trigger(availableNow=True)` explicitamente. Fonte: [Structured Streaming em serverless](https://docs.databricks.com/aws/en/compute/serverless/streaming).
+O detalhe cruel: se você **não** declarar trigger nenhum, o Spark usa `ProcessingTime("0 seconds")` por padrão. Ou seja, **qualquer código de streaming escrito do jeito padrão falha na Free Edition**, incluindo o trecho de `writeStream` que o Damji 1 mostra. Você é obrigada a escrever `.trigger(availableNow=True)` explicitamente. Fonte: [Structured Streaming em serverless](https://docs.databricks.com/aws/en/compute/serverless/streaming).
 
 Na prática: processamento incremental agendado, com latência de minutos, funciona. Stream contínuo de verdade em notebook ou job, não. Contínuo só via Lakeflow pipeline, e na Free Edition você tem "one active pipeline per pipeline type".
 
@@ -1393,7 +1393,7 @@ q.awaitTermination()
 
 ## Parte 5 - O que mudou desde os livros
 
-Os dois livros da bibliografia são bons e continuam válidos no que ensinam sobre modelo de execução, RDD, DataFrame, Catalyst e Tungsten. O problema é a data. "Learning Spark" 2ª edição saiu em 2020 e cobre o Spark 3.0. "Beginning Apache Spark 3", de Hien Luu, saiu em 2021 e cobre até o 3.1. De lá para cá o Spark passou por quatro releases de feature na linha 3.x e três na linha 4.x. Algumas coisas que os livros mandam você configurar já vêm ligadas. Outras que eles descrevem como padrão foram removidas. E o recurso que mais afeta a performance de um job real em 2026 aparece nos livros como nota de rodapé.
+Os dois livros da bibliografia são bons e continuam válidos no que ensinam sobre modelo de execução, RDD e DataFrame. Catalyst e Tungsten eles só nomeiam nos capítulos lidos, uma linha cada, e deixam a explicação para capítulos posteriores. O problema maior é a data. "Learning Spark" 2ª edição saiu em 2020 e cobre o Spark 3.0. "Beginning Apache Spark 3", de Hien Luu, saiu em 2021 e cobre até o 3.1. De lá para cá o Spark passou por quatro releases de feature na linha 3.x e três na linha 4.x. Algumas coisas que os livros mandam você configurar já vêm ligadas. Outras que eles descrevem como padrão foram removidas. E o recurso que mais afeta a performance de um job real em 2026, o AQE, aparece em um parágrafo do Luu 1 e em lugar nenhum do Damji.
 
 Este documento cobre essa lacuna.
 
@@ -1421,7 +1421,7 @@ Fontes: [News](https://spark.apache.org/news/), [Downloads](https://spark.apache
 
 ---
 
-### 2. Adaptive Query Execution: o recurso que os livros subestimam
+### 2. Adaptive Query Execution: o recurso que a bibliografia mal menciona
 
 Se você só puder guardar uma coisa deste documento, guarde esta seção. AQE cai na rubrica do Projeto da Disciplina, e é também o item de maior impacto prático em qualquer pipeline de porte real.
 
@@ -1433,7 +1433,7 @@ AQE resolve isso mudando **quando** a decisão é tomada. O plano físico é que
 
 #### 2.2 Quando virou padrão
 
-`spark.sql.adaptive.enabled` passou a valer `true` por padrão no **Spark 3.2.0**. Os livros, escritos sobre 3.0/3.1, ensinam a ligar manualmente. Se você repetir isso no projeto, não está errado, está redundante. O que muda de verdade é que hoje **você precisa saber quando desligar**, não quando ligar.
+`spark.sql.adaptive.enabled` passou a valer `true` por padrão no **Spark 3.2.0**. Os capítulos da bibliografia não ensinam a ligar nem a desligar: o Luu 1 descreve o AQE em um parágrafo, sem citar a config e sem dizer se vem ligado, e o Damji não menciona AQE em nenhum dos dois capítulos. O que você precisa saber hoje, e que a leitura oficial não dá, é **quando desligar** e como reconhecer no plano final o que o AQE fez.
 
 #### 2.3 As três otimizações, com as configs
 
@@ -1449,7 +1449,7 @@ Junta partições pequenas contíguas depois do shuffle, para não gerar milhare
 | `spark.sql.adaptive.coalescePartitions.parallelismFirst` | `true` | 3.2.0 |
 | `spark.sql.adaptive.coalescePartitions.initialPartitionNum` | herda `spark.sql.shuffle.partitions` | 3.0.0 |
 
-Isto **aposenta** o ritual de calibrar `spark.sql.shuffle.partitions` que os livros descrevem. A prática nova é o inverso da antiga: configure `spark.sql.shuffle.partitions` **alto** (500, 1000, 2000) e deixe o AQE reduzir com base no tamanho real. O número vira um teto, não um alvo.
+Isto **aposenta** o ritual de calibrar `spark.sql.shuffle.partitions` na mão, que era prática padrão na era 3.0. Os capítulos lidos nem chegam lá: a config aparece uma única vez, no builder de exemplo do Damji 1, com valor 6 e sem explicação, e o tuning é adiado para os capítulos 3 e 7. A prática nova é o inverso da antiga: configure `spark.sql.shuffle.partitions` **alto** (500, 1000, 2000) e deixe o AQE reduzir com base no tamanho real. O número vira um teto, não um alvo.
 
 Uma armadilha operacional: `parallelismFirst = true` ignora o tamanho alvo de 64 MB e respeita apenas o mínimo de 1 MB, maximizando paralelismo. Isso é bom em cluster ocioso e ruim em cluster compartilhado, onde você quer usar recurso com parcimônia. A própria documentação recomenda `false` nesse cenário.
 
@@ -1509,7 +1509,7 @@ Fonte: [Performance Tuning - Adaptive Query Execution](https://spark.apache.org/
 
 ### 3. Dynamic Partition Pruning
 
-DPP entrou no Spark 3.0 e é **ligado por padrão** (`spark.sql.optimizer.dynamicPartitionPruning.enabled = true`). Os livros mencionam, mas raramente explicam as condições de ativação, que é justamente o que separa "sei o nome" de "sei usar".
+DPP entrou no Spark 3.0 e é **ligado por padrão** (`spark.sql.optimizer.dynamicPartitionPruning.enabled = true`). O Luu 1 dedica um parágrafo ao DPP, com o número do TPC-DS, e não diz sob que condições ele dispara; o Damji não o menciona. As condições de ativação são justamente o que separa "sei o nome" de "sei usar".
 
 É uma otimização de **esquema estrela**. Em um join entre uma tabela fato grande e particionada e uma tabela dimensão pequena com filtro, o Spark constrói em tempo de execução um filtro dinâmico a partir dos valores que sobraram no lado pequeno e o injeta como subquery no scan da tabela fato. O resultado é que o scan lê apenas os diretórios de partição relevantes, em vez de ler tudo e filtrar depois do join.
 
@@ -1546,7 +1546,7 @@ Fontes: [Performance Tuning](https://spark.apache.org/docs/latest/sql-performanc
 
 **Tipo VARIANT (SPARK-45827).** Tipo nativo para dados semiestruturados, tipicamente JSON, armazenado em formato binário aberto, com acesso a campos aninhados sem reparse a cada leitura. Resolve um incômodo antigo: payload de API e resposta de serviço HTTP normalmente aterrissam como JSON string, e sem VARIANT isso vira `get_json_object` custando parse por linha por acesso. No **4.1** o VARIANT virou GA com **shredding** (SPARK-54454), que materializa subcampos frequentes em colunas físicas. O tipo também foi adotado no **Iceberg v3**.
 
-**Spark Connect maduro.** Arquitetura cliente-servidor via gRPC e Arrow, introduzida no 3.4. O 4.0 trouxe o cliente Python leve `pyspark-client` (cerca de 1,5 MB, contra centenas de MB do `pyspark` completo), paridade de API no cliente Java, clientes em Go, Swift e Rust, e a config `spark.api.mode` para alternar entre clássico e Connect sem reescrever a aplicação.
+**Spark Connect maduro.** Arquitetura cliente-servidor via gRPC e Arrow, introduzida no 3.4. O 4.0 trouxe o cliente Python leve `pyspark-client` (cerca de 1,7 MB, contra centenas de MB do `pyspark` completo), paridade de API no cliente Java, clientes em Go, Swift e Rust, e a config `spark.api.mode` para alternar entre clássico e Connect sem reescrever a aplicação.
 
 Duas correções importantes contra o que se lê por aí. Primeiro: **o Connect não é o modo padrão no Spark 4**. O default continua sendo `classic`; o código só usa `connect` quando `SPARK_CONNECT_MODE=1` está setado, que é o que o tarball dedicado faz. Segundo: os release notes oficiais **nunca declaram GA para o framework Connect como um todo**, apenas para subcomponentes como o Spark ML on Connect (4.1). É produção-ready para os casos suportados, com uma lacuna conhecida: `SparkContext` e a API RDD não são acessíveis via Connect.
 
@@ -1570,7 +1570,7 @@ spark = SparkSession.builder.remote("sc://localhost:15002").getOrCreate()
 #### 4.1.0 (16/12/2025) - mais de 1.800 tickets
 
 - **Spark Declarative Pipelines** (SPARK-51727): você declara datasets e queries, o Spark monta o grafo, ordena dependências, paraleliza, gerencia checkpoints e retries. É a versão open source do conceito de Delta Live Tables.
-- **Real-Time Mode no Structured Streaming** (SPARK-53736): primeiro suporte oficial a latência sub-segundo contínua, com tarefas stateless chegando a milissegundos de um dígito. Isso derruba o argumento "Spark é micro-batch, logo não serve para tempo real" que ainda está nos livros.
+- **Real-Time Mode no Structured Streaming** (SPARK-53736): primeiro suporte oficial a latência sub-segundo contínua, com tarefas stateless chegando a milissegundos de um dígito. Isso encerra o argumento de folclore "Spark é micro-batch, logo não serve para tempo real". Os capítulos lidos, aliás, prometem o oposto sem qualificar: o Luu 1 fala em processamento em tempo real com exactly-once ponta a ponta, sem uma palavra sobre o que o micro-batch custava em latência.
 - **SQL Scripting GA** (SPARK-54499), ligado por padrão.
 - **VARIANT GA com shredding**, recursive CTE, sketches aproximados (KLL, Theta).
 - **UDF e UDTF Arrow-nativas** com decorators (SPARK-52214, SPARK-52979): execução PyArrow sem o custo de converter para pandas no meio.
@@ -1612,7 +1612,7 @@ Fontes: [Photon docs](https://docs.databricks.com/aws/en/compute/photon), [anún
 
 ### 6. O ecossistema lakehouse em 2026
 
-Os livros tratam Delta Lake como "o" formato transacional. Em 2026 o cenário é de três formatos e de convergência entre eles.
+O Luu 1 trata Delta Lake como a solução de semântica de consistência do ecossistema, ao lado de Koalas e MLflow, os três da Databricks; o Damji não o cita nestes capítulos. Em 2026 o cenário é de três formatos e de convergência entre eles.
 
 - **Apache Iceberg** virou o **padrão de fato**. É lido e escrito por praticamente todo cloud e engine, inclusive pela Databricks, que comprou a Tabular e trouxe os criadores do Iceberg para dentro de casa. É nativo na AWS via S3 Tables. O **v3** fechou as últimas lacunas com deletion vectors, row lineage e o tipo VARIANT.
 - **Delta Lake** segue como peso-pesado em base instalada e formato nativo da Databricks, e escolheu convergência em vez de disputa: o **UniForm** escreve Delta e expõe metadados Iceberg e Hudi ao mesmo tempo.
@@ -1624,22 +1624,24 @@ Fontes: [Lakehouse Table Formats in 2026](https://amdatalakehouse.substack.com/p
 
 ---
 
-### 7. O livro diz X, hoje é Y
+### 7. O que a literatura de 2020-2021 assumia, e o que vale hoje
 
-| Tema | O livro (2020-2021, Spark 3.0-3.1) diz | Em julho de 2026 |
+Esta tabela compara o **estado do Spark na época dos dois livros** com julho de 2026. A coluna do meio descreve o consenso da literatura de 2020-2021, não citação dos capítulos 1 e 2 da bibliografia: boa parte destes assuntos (tuning de partição, skew, estado no streaming, mensagens de erro) só aparece em capítulos posteriores, ou em nenhum. Onde a atribuição é de um capítulo lido, ela está dita em linha.
+
+| Tema | O estado da arte em 2020-2021 (Spark 3.0-3.1) | Em julho de 2026 |
 |---|---|---|
 | Versão de referência | Spark 3.0 / 3.1 | **Spark 4.2.0** (14/07/2026); 3.5.9 como LTS estendido até nov/2027 |
-| AQE | "Ative manualmente com `spark.sql.adaptive.enabled=true`" | **Ligado por padrão desde o 3.2.0**; o que se aprende hoje é quando desligar e como ler o plano final |
-| `spark.sql.shuffle.partitions` | "Calibre com cuidado, o default 200 quase nunca serve" | Configure **alto** e deixe o coalescing do AQE reduzir; o número virou teto, não alvo |
-| Skew | "Faça salting manual da chave" | AQE divide partições skewed automaticamente (>256 MB **e** >5x a mediana); salting é fallback |
+| AQE | Luu 1 descreve o mecanismo em um parágrafo, sem citar a config nem dizer se vem ligado; Damji não menciona | **Ligado por padrão desde o 3.2.0**; o que se aprende hoje é quando desligar e como ler o plano final |
+| `spark.sql.shuffle.partitions` | Calibrar na mão era a prática; nos capítulos lidos a config aparece uma vez, com valor 6 e sem explicação | Configure **alto** e deixe o coalescing do AQE reduzir; o número virou teto, não alvo |
+| Skew | Salting manual da chave era a receita corrente; a palavra não aparece em nenhum dos quatro capítulos | AQE divide partições skewed automaticamente (>256 MB **e** >5x a mediana); salting é fallback |
 | Modo ANSI SQL | Opcional e desligado; overflow e cast inválido retornam `null` | **Padrão desde o 4.0** (SPARK-44444); operações inválidas **falham** |
 | Java | "Roda em Java 8 e 11" | **Java 17, 21 e 25**; Java 8 e 11 removidos no 4.0 |
 | Scala | "Scala 2.12 (e 2.13 experimental)" | **Só Scala 2.13** no 4.x (2.13.18 no 4.2.0); 2.12 descontinuado |
 | Python | "Python 3.6 ou 3.8+" | Mínimo **3.10**; suporte declarado até 3.14 |
-| Arquitetura do driver | Driver roda junto com a aplicação, monólito | **Spark Connect**: cliente-servidor via gRPC/Arrow, cliente leve de 1,5 MB, clientes em Go, Rust, Swift, JDBC. Não é o default e não tem RDD |
+| Arquitetura do driver | Driver roda junto com a aplicação, monólito | **Spark Connect**: cliente-servidor via gRPC/Arrow, cliente leve de 1,7 MB, clientes em Go, Rust, Swift, JDBC. Não é o default e não tem RDD |
 | Estado no streaming | `mapGroupsWithState` / `flatMapGroupsWithState`, estado opaco | **`transformWithState`** com múltiplas variáveis, TTL, timers; **State Data Source** lê o estado como tabela |
 | Latência do streaming | Micro-batch, piso de ~100 ms | **Real-Time Mode** (4.1) entrega sub-segundo contínuo |
-| DStreams | Apresentada como API de streaming | **Deprecada desde o 3.4** |
+| DStreams | Luu 1 ainda apresenta o DStream como a abstração principal de streaming; Damji 1 já o dá por obsoleto. Os dois discordam | **Deprecada desde o 3.4** |
 | JSON semiestruturado | `from_json` / `get_json_object` sobre string | Tipo **VARIANT** nativo, binário, GA com shredding no 4.1 |
 | Conectores customizados | Só em Scala/Java sobre DSv2 | **Python Data Source API** (4.0), batch e streaming, em Python puro |
 | Mensagens de erro | Stack trace de JVM | Error conditions com **SQLSTATE** e contexto da query |
@@ -1680,6 +1682,7 @@ Fontes: [Lakehouse Table Formats in 2026](https://amdatalakehouse.substack.com/p
 - Appuswamy et al., *Nobody ever got fired for buying a cluster*, MSR-TR-2013-2 - [microsoft.com](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/msrtr-2013-2.pdf)
 - Saxena et al., *Why TPC is Not Enough: An Analysis of the Amazon Redshift Fleet*, PVLDB 17, 2024 - [vldb.org](https://www.vldb.org/pvldb/vol17/p3694-saxena.pdf)
 - Tigani, *Big Data is Dead*, MotherDuck, fev/2023 - [motherduck.com](https://motherduck.com/blog/big-data-is-dead/)
+- MotherDuck, *Redshift Files: the Hunt for Big Data* - [motherduck.com](https://motherduck.com/blog/redshift-files-hunt-for-big-data/). É daqui, e não do paper da VLDB, que sai a tabela de bytes escaneados por query
 
 **Benchmarks**
 - Miles Cole, *Should You Ditch Spark for DuckDB or Polars?*, dez/2024 - [milescole.dev](https://milescole.dev/data-engineering/2024/12/12/Should-You-Ditch-Spark-DuckDB-Polars.html)
@@ -1693,7 +1696,7 @@ Fontes: [Lakehouse Table Formats in 2026](https://amdatalakehouse.substack.com/p
 - AWS EC2 High Memory U7i - [aws.amazon.com](https://aws.amazon.com/ec2/instance-types/u7i/)
 - Alex Merced, *Single-Node Data Engineering*, mai/2026 - [iceberglakehouse.com](https://iceberglakehouse.com/posts/2026-05-23-single-node-data-engineering-duckdb-datafusion-polars-lakesail/)
 
-**Nota de confiabilidade.** Os números fundacionais (NSDI 2012, CACM 2016, MSR 2013, VLDB 2024, benchmarks de Cole e Coiled, documentação oficial do Spark e da AWS) vêm de fonte primária. Métricas de receita da Databricks e latências divulgadas pelo próprio fornecedor devem ser lidas como ordem de grandeza. Não há deprecação formal do GraphX: a afirmação segura é "sem desenvolvimento relevante".
+**Nota de confiabilidade.** Os números fundacionais (NSDI 2012, CACM 2016, MSR 2013, VLDB 2024, benchmarks de Cole e Coiled, documentação oficial do Spark e da AWS) vêm de fonte primária. Uma exceção conferida em 26/07/2026: a **tabela de bytes escaneados por query não está no paper da VLDB**, é análise da MotherDuck sobre o dataset que a AWS publicou, e o paper descreve o Redset como cerca de 69 milhões de queries enquanto a MotherDuck fala em meio bilhão. Dado da AWS, leitura da MotherDuck. Métricas de receita da Databricks e latências divulgadas pelo próprio fornecedor devem ser lidas como ordem de grandeza. Não há deprecação formal do GraphX: a afirmação segura é "sem desenvolvimento relevante".
 
 ### RDD, DataFrame, Dataset, Catalyst e Tungsten
 

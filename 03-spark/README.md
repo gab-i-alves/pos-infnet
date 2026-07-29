@@ -16,7 +16,7 @@ Versão de referência do material: **Apache Spark 4.2.0**. A bibliografia ofici
 | # | Aula | pre | deep | live | proof |
 |---|---|---|---|---|---|
 | [01](aula-01/) | Introdução ao Apache Spark | | ✓ | parcial | |
-| [02](aula-02/) | Transformação e persistência SQL | | | | |
+| [02](aula-02/) | Transformação e persistência SQL | ✓ | ✓ | | |
 | [03](aula-03/) | Transformação e análise avançada | | | | |
 | [04](aula-04/) | Otimização de desempenho no Spark | | | | |
 | [05](aula-05/) | Processamento em tempo real | | | | |
