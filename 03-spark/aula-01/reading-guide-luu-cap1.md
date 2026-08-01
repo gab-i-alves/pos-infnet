@@ -1,149 +1,203 @@
-# Reading Guide — *Beginning Apache Spark 3*, Chapter 1: Introduction to Apache Spark
+# Guia de Leitura — *Beginning Apache Spark 3*, Capítulo 1: Introduction to Apache Spark
 
-**Source:** Hien Luu, *Beginning Apache Spark 3* (Apress, 2021), Chapter 1
-**Scope:** every question in Levels 1–4 is answerable from this chapter alone. Level 5 is deliberately outside it.
+**Fonte:** Hien Luu, *Beginning Apache Spark 3* (Apress, 2021), Capítulo 1
+**Escopo:** toda questão dos Níveis 1 a 4 é respondível apenas com este capítulo. O Nível 5 está deliberadamente fora dele.
 
-## How to use this guide
+## Como usar este guia
 
-1. Read the chapter once end to end without stopping.
-2. Work Level 1 from memory first, then go back to the text to fill gaps. Mark every question you could not answer — those are your re-read targets.
-3. Do Levels 2–3 in writing, in full sentences. If you cannot write it, you do not know it.
-4. Level 4 is where the chapter actually becomes useful: it forces you to connect sections that the author kept separate.
-5. Level 5 items go straight into your study backlog, not into your notes as facts.
+1. Leia o capítulo uma vez de ponta a ponta, sem parar.
+2. Faça o Nível 1 de memória primeiro, depois volte ao texto para preencher as lacunas. Marque toda questão que você não conseguiu responder — essas são seus alvos de releitura.
+3. Faça os Níveis 2 e 3 por escrito, em frases completas. Se você não consegue escrever, você não sabe.
+4. O Nível 4 é onde o capítulo de fato se torna útil: ele obriga você a conectar seções que o autor manteve separadas.
+5. Os itens do Nível 5 vão direto para o seu backlog de estudo, não para as suas notas como fatos.
 
-Each question carries a pointer to the section where the evidence lives, so this doubles as an index.
-
----
-
-## Level 1 — Recall and definitions
-
-Short, verifiable answers. One or two sentences each.
-
-1. What three properties does the author identify as the reason for Spark's popularity and wide adoption? *(Overview; Summary)*
-2. When was Spark 3.0 released, and what milestone in the project's history did that release coincide with? *(Overview)*
-3. What performance claim does the Spark website make relative to Hadoop MapReduce? *(Overview)*
-4. What benchmark did Spark win in 2014, what volume and record count did it sort, and what improvement did the Databricks submission claim over the previous record holder? *(Overview)*
-5. Approximately how many high-level data processing operators does Spark offer, and in which four languages are they available? *(Overview; Summary)*
-6. List the four workload types the author uses to illustrate Spark's flexibility. *(Overview)*
-7. Where and in what year did Spark begin as a research project? In which years was it open sourced and promoted to an Apache top-level project? *(History)*
-8. Which company was founded by researchers from the original project, how much did it raise in 2013, and what role does the author assign it in the Spark ecosystem? *(History)*
-9. Name the two research papers the author recommends as foundational reading, and the years they were published. *(History)*
-10. What two characteristics of Scala does the author give as the reason Spark's creators chose it? *(History)*
-11. According to the Spark FAQ as cited in the chapter, how many machines are in the world's largest Spark cluster? *(Spark Cluster and Resource Management System)*
-12. Name the two resource management systems the chapter mentions by name, plus the third option available to companies that adopt Spark exclusively. *(Spark Cluster and Resource Management System)*
-13. What are the two main components of a typical resource management system, and what does the master know about the slaves? *(Spark Cluster and Resource Management System)*
-14. What are the two parts of a Spark application, as the author defines it? *(Spark Applications)*
-15. Through which component does a Spark driver perform its work? *(Spark Applications)*
-16. What kind of process is a Spark executor, and what determines its life span? *(Spark Drivers and Executors)*
-17. How many drivers and how many executors does a Spark application consist of? *(Spark Drivers and Executors; Summary)*
-18. On what unit of hardware is each task executed? *(Spark Drivers and Executors)*
-19. What three resource parameters can you specify when launching a Spark application? *(Spark Drivers and Executors)*
-20. Name the five libraries that sit on top of Spark Core in the unified stack, and the workload each one targets. *(Spark Unified Stack; Figure 1-3)*
-21. What are the two things Spark Core consists of? *(Spark Core)*
-22. Define an RDD using the author's own terms. *(Spark Core)*
-23. What is the name of the Spark SQL optimizer, and what is a DataFrame? *(Spark SQL)*
-24. List the structured formats and storage systems Spark SQL can read from and write to, as enumerated in the chapter. *(Spark SQL)*
-25. According to the 2021 Spark survey cited in the chapter, which component was growing fastest? *(Spark SQL)*
-26. What is the three-part motto the author gives for Spark SQL? *(Spark SQL)*
-27. Which streaming data sources does the chapter list? *(Spark Structured Streaming)*
-28. What does DStream stand for, and in which Spark version does the chapter say Structured Streaming was introduced? *(Spark Structured Streaming)*
-29. What delivery guarantee does the chapter attribute to the Structured Streaming engine? *(Spark Structured Streaming)*
-30. Roughly how many algorithms does MLlib provide, and starting from which Spark version are its APIs DataFrame-based? *(Spark MLlib)*
-31. Which two Spark SQL engine components does the DataFrame-based MLlib benefit from? *(Spark MLlib)*
-32. What abstraction does GraphX provide, and which graph algorithms ship with it? *(Spark GraphX)*
-33. What percentage of Spark 3.0 enhancements went into Spark SQL and Spark Core, and what speedup over Spark 2.4 is claimed on which benchmark? *(Apache Spark 3.0)*
-34. Name the three Spark 3.0 features the chapter highlights, and state in one line what each does. *(Apache Spark 3.0)*
-35. What speedup range does DPP deliver, and on what share of benchmark queries? *(Dynamic Partition Pruning)*
-36. List the seven application categories the chapter gives as real-life uses of Spark. *(Apache Spark Applications)*
-37. What problem does Delta Lake solve, and what three capabilities does it provide? *(Delta Lake)*
-38. What does Koalas implement, when was version 1.0 released, and what pandas API coverage did it claim? *(Koalas)*
-39. Which alternative project does the chapter mention for parallel computing in Python? *(Koalas)*
-40. Name MLflow's four components and the responsibility of each. *(MLflow)*
+Cada questão traz um ponteiro para a seção onde a evidência está, então isto também funciona como índice.
 
 ---
 
-## Level 2 — Comprehension
+## Nível 1 — Memorização e definições
 
-Explain in your own words. Three to six sentences each.
+Respostas curtas e verificáveis. Uma ou duas frases cada.
 
-1. Explain why the *combination* of speed, ease of use, and flexibility matters more than any one of them individually. What did teams have to do before a unified engine existed? *(Overview)*
-2. What specific inefficiencies in Hadoop MapReduce motivated the Berkeley research project, and which two ideas were introduced to address them? *(History)*
-3. Describe the division of labour between the cluster manager and the workers. Who offers resources, who assigns work, and who monitors process health? *(Spark Cluster and Resource Management System)*
-4. Walk through the driver's full set of responsibilities, in order, from application submission to returning results to the user. *(Spark Applications)*
-5. The chapter calls the one-executor-per-application rule a conscious design decision. What benefit does it buy, and what cost does it impose? *(Spark Drivers and Executors)*
-6. Explain how Spark achieves parallelism, tracing the chain from application → executor → task → CPU core. *(Spark Drivers and Executors)*
-7. Why does the author argue that improvements to Spark Core automatically benefit the whole stack? What does this imply about where optimization effort pays off? *(Spark Core)*
-8. What two responsibilities of the distributed computing infrastructure does the author single out as requiring "intimate knowledge" from advanced users, and why would those two in particular determine application performance? *(Spark Core)*
-9. Explain the argument for why SQL became the lingua franca of data processing, and what Spark SQL adds to that story at petabyte scale. *(Spark SQL)*
-10. Describe the micro-batch model behind DStreams: what is the input split on, and how is the current processing state used? *(Spark Structured Streaming)*
-11. In what sense does Structured Streaming simplify the developer's mental model compared with the earlier engine? Relate this to the Reynold Xin remark quoted at the end of that section. *(Spark Structured Streaming)*
-12. Why does the iterative nature of machine learning algorithms make Spark a good fit for them? *(Spark MLlib)*
-13. Why was R alone insufficient for large-scale data analysis, and what exactly does SparkR contribute? *(SparkR)*
-14. Explain the core idea of Adaptive Query Execution. Which runtime statistics does it react to, and what three decisions can it revise? *(Adaptive Query Execution Framework)*
-15. Explain Dynamic Partition Pruning in the context of a star schema. Which table gets its row count reduced, and on what basis? *(Dynamic Partition Pruning)*
-16. Why did Spark need an accelerator-aware scheduler at all? What changed in how people use Spark? *(Accelerator-aware Scheduler)*
-17. Go through the five-line word count example and explain what each line does and what shape the data has after it. *(Spark Example Applications; Listing 1-1)*
-18. What problem was MLflow conceived to solve, and why does the author frame it as a software engineering problem rather than a machine learning one? *(MLflow)*
-
----
-
-## Level 3 — Application and transfer
-
-Use the chapter's content to reason about concrete situations. The chapter gives you enough to answer; it does not hand you the answer.
-
-1. You submit an application with 10 executors, 4 cores and 8 GB each. Using the chapter's model, how many tasks can run concurrently? How much total memory is under the application's control, and how much of the cluster does the driver itself account for? *(Spark Drivers and Executors)*
-2. Two teams each run a long-lived Spark application and want to share an expensive intermediate dataset. Based on the executor isolation model, what are their options and what does each cost them? *(Spark Drivers and Executors)*
-3. A company already runs a YARN cluster for Hive and Pig jobs. Based on the chapter, what is their path to adopting Spark, and what would change if they were a startup with no existing cluster? *(Spark Cluster and Resource Management System)*
-4. Your pipeline currently writes intermediate results to storage between a batch stage and a streaming stage. Which specific benefit of the unified stack does the chapter say you are giving up? *(Spark Unified Stack)*
-5. A join in your job is badly skewed — one partition takes twenty times longer than the rest. Which Spark 3.0 feature addresses this, and what does it need in order to act? *(Adaptive Query Execution Framework)*
-6. You query a large fact table joined to a small filtered dimension table. Describe what DPP does to the physical read, and why the star schema shape is what makes it possible. *(Dynamic Partition Pruning)*
-7. An analyst who knows SQL but not Scala needs to process petabyte-scale data. Which parts of the stack does the chapter say make that possible, and which two interfaces are available to them? *(Spark SQL)*
-8. A data scientist has working pandas code that no longer fits in memory on one machine. Using only the chapter, lay out two paths forward and the trade-off between them. *(Koalas)*
-9. You need to run interactive queries over the output of a model scoring real-time streams. Which components does that touch, and why does the chapter present this as newly feasible rather than merely convenient? *(Spark Unified Stack)*
-10. Map the word count example onto the executor model: which lines cause work to be distributed, where does data movement between machines occur, and which line forces a result back through the driver or out to storage? *(Spark Example Applications + Spark Drivers and Executors)*
-11. Of the seven application categories listed, pick the three closest to a public-data crawling and parsing pipeline and justify each choice from the chapter's descriptions. *(Apache Spark Applications)*
-12. Your ingestion job and your analytics job intermittently read half-written output and disagree on schema. Which ecosystem component does the chapter propose, and which of its three capabilities addresses which symptom? *(Delta Lake)*
-
----
-
-## Level 4 — Analysis and synthesis
-
-Cross-section reasoning. These have defensible rather than single answers, but every ingredient is in the chapter.
-
-1. The chapter describes Spark as master/slave, with the driver as master. But it also describes a cluster manager with its own master and workers. Draw both hierarchies and explain how they intersect. Which master can the other not function without? *(Spark Cluster and Resource Management System + Spark Drivers and Executors + Figure 1-1)*
-2. Compare Figures 1-1 and 1-2. What does each one show that the other omits, and what would you need to add to either to make it a complete picture of a running application?
-3. The chapter names data shuffling as a key concern of the distributed infrastructure, and separately names three Spark 3.0 optimizations. Argue which of those three most directly reduces shuffle cost, and which reduces I/O instead.
-4. The chapter says applications on top of Spark Core inherit its improvements automatically. Yet Spark 3.0's headline gains came from Spark SQL, not Core. Reconcile these two claims. What does that suggest about where the RDD-only user sits in Spark 3.0?
-5. Trace the abstraction ladder the chapter builds: RDD → DataFrame → SQL → pandas API. At each rung, what does the user gain and what control do they surrender?
-6. The chapter presents the executor isolation decision as a benefit. Reframe it as a cost, using the resource management section: what does per-application executor allocation imply for cluster utilization when many short applications run?
-7. Build a table with one row per stack component (Core, SQL, Structured Streaming, MLlib, GraphX, SparkR) and columns for: primary abstraction, workload type, languages exposed, and dependency on other components. Which cells does the chapter leave blank?
-8. The performance evidence in the chapter comes from three sources: the website's 100x claim, the 2014 GraySort result, and the TPC-DS 30 TB comparison. Rank them by how much you would trust them for predicting your own workload, and say what each one leaves out.
-9. The chapter argues that Spark reduces operational cost by replacing several specialized systems. Construct the counterargument using only material from this chapter — where does a single unified engine impose costs of its own?
-10. Delta Lake, Koalas, and MLflow are all presented as "ecosystem" rather than "stack." Based on how the chapter describes each, articulate the criterion that separates the two categories. Does Delta Lake actually fit your criterion?
-11. Write the chapter's argument for Spark in five sentences, one per section, such that removing any sentence breaks the argument.
-12. Identify three claims in this chapter that are asserted without supporting evidence. For each, state what evidence would settle it.
+1. Quais três propriedades o autor identifica como a razão da popularidade e da ampla adoção do Spark? *(Overview; Summary)* R: Facilidade de uso, velocidade e flexibilidade.
+2. Quando o Spark 3.0 foi lançado, e com qual marco da história do projeto esse lançamento coincidiu? *(Overview)* R: Lançado em junho de 2020, marcando o décimo aniversário do Spark como projeto open source.
+3. Qual alegação de performance o site do Spark faz em relação ao Hadoop MapReduce? *(Overview)* R: Alega que ele pode rodar certos jobs de processamento de dados até 100 vezes mais rápido.
+4. Qual benchmark o Spark venceu em 2014, que volume e que contagem de registros ele ordenou, e qual melhoria a submissão da Databricks alegou sobre o detentor do recorde anterior? *(Overview)* R: O Spark venceu o Daytona GraySort contest, que é um benchmark da indústria para ver quão rápido um sistema consegue ordenar 100 TB de dados (1 trilhão de registros); a submissão da Databricks alegou que o Spark conseguia ordenar 100 TB de dados três vezes mais rápido usando dez vezes menos recursos que o recorde mundial anterior, estabelecido pelo Hadoop MapReduce.
+5. Aproximadamente quantos operadores de processamento de dados de alto nível o Spark oferece, e em quais quatro linguagens eles estão disponíveis? *(Overview; Summary)* R: Oferece mais de 80 operadores de processamento de dados de alto nível, comumente necessários, para facilitar o uso por desenvolvedores, cientistas de dados e analistas. Esses operadores estão disponíveis em Scala, Java, Python e R.
+6. Liste os quatro tipos de workload que o autor usa para ilustrar a flexibilidade do Spark. *(Overview)* R: Aplicações batch, queries interativas, algoritmos de machine learning que exigem muitas iterações, e aplicações de streaming em tempo real para extrair insights acionáveis em near real time.
+7. Onde e em que ano o Spark começou como projeto de pesquisa? Em quais anos ele foi aberto como open source e promovido a projeto top-level da Apache? *(History)* R: O Spark começou como projeto de pesquisa na University of California, Berkeley, no AMPLab, em 2009. Depois que esse projeto de pesquisa provou ser uma solução viável que supera o MapReduce, foi aberto como open source em 2010 e se tornou projeto top-level da Apache em 2013.
+8. Qual empresa foi fundada por pesquisadores do projeto original, quanto ela captou em 2013, e que papel o autor atribui a ela no ecossistema Spark? *(History)* R: Muitos pesquisadores que trabalharam nesse projeto de pesquisa fundaram uma empresa chamada Databricks, e captaram mais de US$ 43 milhões em 2013. A Databricks é o principal steward comercial por trás do Spark.
+9. Cite os dois artigos de pesquisa que o autor recomenda como leitura fundacional, e os anos em que foram publicados. *(History)* R: Dois artigos de pesquisa populares sobre Spark são "Spark: Cluster Computing with Working Sets", publicado em 2010, e "Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing", publicado em 2012.
+10. Quais duas características do Scala o autor dá como razão para os criadores do Spark o terem escolhido? *(History)* R: Escolheram Scala para o projeto pela combinação da concisão do Scala com sua tipagem estática.
+11. Segundo o FAQ do Spark citado no capítulo, quantas máquinas tem o maior cluster Spark do mundo? *(Spark Cluster and Resource Management System)* R: Mais de 8000 máquinas.
+12. Cite os dois resource management systems que o capítulo menciona pelo nome, mais a terceira opção disponível para empresas que adotam Spark exclusivamente. *(Spark Cluster and Resource Management System)* R: Apache YARN, Apache Mesos (grafado "Meso" no texto) e o Spark cluster manager que vem out of the box.
+13. Quais são os dois componentes principais de um resource management system típico, e o que o master sabe sobre os slaves? *(Spark Cluster and Resource Management System)* R: Os dois componentes principais em um resource management system típico são o cluster manager e o worker. O master sabe onde os slaves estão localizados, quanta memória e quantos CPU cores cada um tem.
+14. Quais são as duas partes de uma aplicação Spark, conforme o autor a define? *(Spark Applications)* R: A lógica de processamento de dados expressa por meio das Spark APIs, e o driver.
+15. Através de qual componente um Spark driver realiza seu trabalho? *(Spark Applications)* R: O Spark driver realiza suas tarefas através de um componente chamado SparkSession.
+16. Que tipo de processo é um Spark executor, e o que determina seu tempo de vida? *(Spark Drivers and Executors)* R: Cada Spark executor é um processo JVM e é dedicado a uma aplicação Spark específica. O tempo de vida de um Spark executor é a duração da aplicação Spark, que pode ser de minutos ou de dias.
+17. De quantos drivers e de quantos executors uma aplicação Spark é composta? *(Spark Drivers and Executors; Summary)* R: Uma aplicação Spark é composta de um driver e um ou mais executors.
+18. Em qual unidade de hardware cada task é executada? *(Spark Drivers and Executors)* R: Cada task é executada em um CPU core separado.
+19. Quais três parâmetros de recurso você pode especificar ao lançar uma aplicação Spark? *(Spark Drivers and Executors)* R: O número de executors de que a aplicação precisa, a quantidade de memória e o número de CPU cores que cada executor deve ter.
+20. Cite as cinco bibliotecas que ficam sobre o Spark Core no stack unificado, e o workload que cada uma atende. *(Spark Unified Stack; Figure 1-3)* R: O Spark SQL é especializado em processamento interativo de dados. O Spark Streaming é processamento de dados em tempo real. O Spark GraphX é para processamento de grafos. O Spark MLlib é para machine learning. O Spark R roda tarefas de machine learning usando o shell do R.
+21. Quais são as duas coisas de que o Spark Core é composto? *(Spark Core)* R: O Spark Core, como alicerce do engine distribuído de processamento de dados do Spark, é composto da distributed computing infrastructure e da abstração de programação central, o RDD.
+22. Defina um RDD usando os próprios termos do autor. *(Spark Core)* R: Um Resilient Distributed Dataset (RDD) é uma coleção de objetos fault-tolerant, particionada por um cluster, que pode ser manipulada em paralelo.
+23. Qual é o nome do otimizador do Spark SQL, e o que é um DataFrame? *(Spark SQL)* R: O otimizador é o Catalyst do Spark SQL, que realiza otimizações comumente feitas em muitos engines analíticos de banco de dados. Um DataFrame é, na prática, uma coleção distribuída de dados organizada em colunas nomeadas, conceitualmente equivalente a uma tabela em um banco de dados relacional.
+24. Liste os formatos estruturados e sistemas de armazenamento dos quais o Spark SQL consegue ler e nos quais consegue escrever, conforme enumerado no capítulo. *(Spark SQL)* R: Ele consegue ler e escrever dados de e para diversos formatos estruturados e sistemas de armazenamento, como JavaScript Object Notation (JSON), comma-separated values (CSV), arquivos Parquet ou ORC, bancos de dados relacionais, Hive e outros.
+25. Segundo a pesquisa Spark de 2021 citada no capítulo, qual componente crescia mais rápido? *(Spark SQL)* R: Spark SQL.
+26. Qual é o lema em três partes que o autor dá para o Spark SQL? *(Spark SQL)* R: Escrever menos código, ler menos dados e deixar que o otimizador faça o trabalho pesado ("write less code, read less data, and the optimizer does the hard work").
+27. Quais fontes de dados de streaming o capítulo lista? *(Spark Structured Streaming)* R: Kafka, Flume, Kinesis, Twitter, HDFS ou TCP socket.
+28. O que significa DStream, e em qual versão do Spark o capítulo diz que o Structured Streaming foi introduzido? *(Spark Structured Streaming)* R: DStream significa discretized stream, que implementa um modelo incremental de processamento de stream dividindo os dados de entrada em pequenos batches (com base em um intervalo de tempo) que podem ser regularmente combinados com o estado corrente de processamento para produzir novos resultados. O Structured Streaming foi introduzido na versão 2.1 do Spark.
+29. Qual garantia de entrega o capítulo atribui ao engine do Structured Streaming? *(Spark Structured Streaming)* R: Suporte a end-to-end exactly-once.
+30. Aproximadamente quantos algoritmos a MLlib fornece, e a partir de qual versão do Spark suas APIs são baseadas em DataFrame? *(Spark MLlib)* R: Fornece mais de 50 algoritmos comuns de machine learning e abstrações para gerenciar e simplificar tarefas de construção de modelos. A partir da versão 2.0 do Spark, as APIs da MLlib são baseadas em DataFrames.
+31. De quais dois componentes do engine do Spark SQL a MLlib baseada em DataFrame se beneficia? *(Spark MLlib)* R: Catalyst e Tungsten.
+32. Que abstração o GraphX fornece, e quais algoritmos de grafo já vêm com ele? *(Spark GraphX)* R: O Spark GraphX é uma biblioteca que viabiliza computações graph-parallel fornecendo a abstração de um multigrafo direcionado com propriedades associadas a cada vértice e a cada aresta. Inclui uma coleção de algoritmos comuns de processamento de grafos, entre eles page ranks, connected components, shortest paths e outros.
+33. Qual percentual das melhorias do Spark 3.0 foi para o Spark SQL e o Spark Core, e qual ganho de velocidade sobre o Spark 2.4 é alegado, em qual benchmark? *(Apache Spark 3.0)* R: Cerca de 60% das melhorias foram para os componentes Spark SQL e Spark Core. Com base no benchmark TPC-DS 30 TB feito pela Databricks, o Spark 3.0 é aproximadamente duas vezes mais rápido que o Spark 2.4.
+34. Cite as três features do Spark 3.0 que o capítulo destaca, e diga em uma linha o que cada uma faz. *(Apache Spark 3.0)* R: Adaptive Query Execution Framework: adapta o plano de execução em runtime com base nas estatísticas mais recentes sobre tamanho dos dados, número de partições e assim por diante. Dynamic Partition Pruning (DPP): a ideia é evitar ler dados desnecessários. Accelerator-aware Scheduler: permite que usuários descrevam e requisitem recursos de GPU para seus workloads complexos que envolvem machine learning.
+35. Qual faixa de ganho de velocidade o DPP entrega, e sobre qual parcela das queries do benchmark? *(Dynamic Partition Pruning)* R: Com base em um benchmark TPC-DS, essa técnica de otimização pode acelerar a performance de 60% das queries em uma faixa de 2x a 18x.
+36. Liste as sete categorias de aplicação que o capítulo dá como usos reais do Spark. *(Apache Spark Applications)* R: Aplicações de customer intelligence, soluções de data warehouse, soluções de streaming em tempo real, recommendation engines, log processing, serviços user-facing e detecção de fraude.
+37. Que problema o Delta Lake resolve, e quais três capacidades ele fornece? *(Delta Lake)* R: O Delta Lake resolve a semântica de consistência de dados (data consistency semantics) em data lakes. O capítulo enquadra assim: um data lake usa uma solução de armazenamento distribuído para guardar dados estruturados e não estruturados para diversos consumidores (cientistas de dados, engenheiros de dados, analistas de negócio), e manter esses dados utilizáveis exige supervisão em data catalog, data discovery, data quality, controle de acesso e consistência de dados. A consistência é a mais difícil delas, e as empresas vinham inventando truques ou soluções "Band-Aid" para o problema. O Delta Lake é a resposta open source, fornecendo três capacidades: (1) um formato aberto de armazenamento de dados, (2) garantias transacionais e (3) suporte a schema enforcement e schema evolution.
+38. O que o Koalas implementa, quando a versão 1.0 foi lançada, e qual cobertura da API do pandas ela alegou? *(Koalas)* R: O Koalas casa a abstração poderosa e flexível do DataFrame com o engine distribuído de processamento de dados do Spark, implementando a pandas DataFrame API sobre o Apache Spark. A versão 1.0 foi lançada em junho de 2020 com 80% de cobertura das APIs do pandas.
+39. Qual projeto alternativo o capítulo menciona para computação paralela em Python? *(Koalas)* R: Dask.
+40. Cite os quatro componentes do MLflow e a responsabilidade de cada um. *(MLflow)* R: Tracking registra e compara experimentos de machine learning. Projects fornece um formato consistente de organizar projetos de machine learning para compartilhar e reproduzir modelos com facilidade. Models fornece um formato padronizado para empacotar modelos de machine learning e uma API consistente para trabalhar com eles, como carregá-los e fazer deploy. Registry é um model store que hospeda modelos de machine learning e rastreia sua lineage, sua versão e suas transições de estado de deployment.
 
 ---
 
-## Level 5 — Beyond the chapter (backlog, not notes)
+## Nível 2 — Compreensão
 
-The chapter was written against Spark 3.0/3.1 in 2021. These items are known soft spots — verify against current documentation before you commit anything to your permanent notes.
+Explique com suas próprias palavras. Três a seis frases cada.
 
-1. The chapter presents DStream as the main streaming abstraction and Structured Streaming as a newer engine. Check which one is current, which is legacy, and what abstraction Structured Streaming actually uses. The chapter's framing here is the most dated part of it.
-2. The chapter dates Structured Streaming to Spark 2.1. Verify the introduction and general-availability versions.
-3. Koalas as a separate project versus the pandas API integrated into Spark itself — find out what happened and in which version.
-4. Mesos as a Spark resource manager: check its current support status. Also add the deployment target the chapter omits entirely, which is now the common one.
-5. The chapter's Spark 3.0 feature list is partial. Find out what AQE, DPP, and the accelerator-aware scheduler default to in current versions, and which further optimizations landed in 3.2, 3.4, and 4.0.
-6. Delta Lake is presented as *the* answer for storage consistency. Identify the competing open table formats and the dimensions on which they differ — this is directly relevant to lakehouse coursework.
-7. The chapter never distinguishes narrow from wide transformations, actions from transformations, or jobs from stages from tasks — despite the word count example depending on all three distinctions. Note this as a gap to close from the RDD chapter.
-8. `sc.textFile` in Listing 1-1 uses the SparkContext, while the text says the driver works through SparkSession. Find out the relationship between the two and which one current code should use.
+1. Explique por que a *combinação* de velocidade, facilidade de uso e flexibilidade importa mais que qualquer uma delas isoladamente. O que os times tinham que fazer antes de existir um engine unificado? *(Overview)* R: Nenhuma das três propriedades sozinha é suficiente. Velocidade sem facilidade de uso restringe o engine a especialistas; facilidade de uso sem velocidade não sobrevive a grandes volumes; e as duas juntas ainda perdem a maior parte do valor se o engine só dá conta de um tipo de workload. A combinação é o que permite a um único engine servir desenvolvedores, cientistas de dados e analistas em todos os tipos de workload ao mesmo tempo, e é isso que o autor credita pela popularidade e pela ampla adoção do Spark. Antes de existir um engine unificado, cada um desses tipos de workload exigia uma solução e uma tecnologia diferentes, então os times tinham que manter vários sistemas especializados rodando e mover dados entre eles. Consolidar no Spark reduz drasticamente o custo operacional e os recursos necessários.
+2. Que ineficiências específicas do Hadoop MapReduce motivaram o projeto de pesquisa de Berkeley, e quais duas ideias foram introduzidas para resolvê-las? *(History)* R: Os pesquisadores do AMPLab da UC Berkeley observaram as ineficiências do framework Hadoop MapReduce ao lidar com casos de uso de processamento de dados interativos e iterativos. Esses são justamente os dois padrões de acesso que passam sobre os mesmos dados muitas vezes, então o custo de relê-los a cada passagem domina o tempo de execução. Eles buscaram formas de superar essas ineficiências introduzindo duas ideias: in-memory storage, que elimina o custo de leitura repetida, e uma maneira eficiente de lidar com fault recovery, que é o que torna seguro depender de manter dados em memória. Uma vez que o projeto provou ser uma solução viável que supera o MapReduce, foi aberto como open source em 2010.
+3. Descreva a divisão de trabalho entre o cluster manager e os workers. Quem oferece recursos, quem atribui trabalho e quem monitora a saúde dos processos? *(Spark Cluster and Resource Management System)* R: O cluster manager é o master e os workers são os slaves. O master sabe onde os workers estão localizados, quanta memória cada um tem e quantos CPU cores cada um tem, o que é o que lhe permite alocar trabalho de forma sensata. Uma de suas principais responsabilidades é orquestrar o trabalho atribuindo-o aos workers. Cada worker oferece seus recursos (memória, CPU etc.) ao cluster manager e executa o trabalho que lhe é atribuído. Monitorar a saúde de processos cabe ao worker, e não ao manager: o capítulo dá "lançar um processo específico e monitorar sua saúde" como exemplo do trabalho atribuído que um worker executa.
+4. Percorra o conjunto completo de responsabilidades do driver, em ordem, desde a submissão da aplicação até a devolução dos resultados ao usuário. *(Spark Applications)* R: O driver é o coordenador central de uma aplicação Spark, e realiza tudo isso através de um componente chamado SparkSession. Primeiro, ele interage com o cluster manager para descobrir em quais máquinas rodar a lógica de processamento de dados. Segundo, para cada uma dessas máquinas, ele solicita ao cluster manager que lance um processo conhecido como executor. Terceiro, ele gerencia e distribui as Spark tasks para cada executor em nome da aplicação. Por fim, se a lógica de processamento exige que resultados sejam apresentados a um usuário, o driver se coordena com cada executor para coletar os resultados computados e os mescla antes de apresentá-los.
+5. O capítulo chama a regra de um executor por aplicação de decisão consciente de projeto. Que benefício ela compra, e que custo ela impõe? *(Spark Drivers and Executors)* R: O benefício é o isolamento. Como um executor é dedicado a uma única aplicação e nunca compartilhado, uma aplicação não pode interferir na memória, nos cores ou nas falhas de outra, então um job mal comportado não derruba os vizinhos. O custo é que compartilhar dados entre aplicações fica incômodo, já que não existe um executor comum para guardá-los. Duas aplicações que precisam do mesmo dataset intermediário têm que escrevê-lo em um sistema de armazenamento externo como o HDFS e lê-lo de volta, pagando um I/O que um executor compartilhado teria evitado.
+6. Explique como o Spark alcança paralelismo, traçando a cadeia de aplicação → executor → task → CPU core. *(Spark Drivers and Executors)* R: O Spark emprega uma arquitetura master/slave, na qual o driver é o master e o executor é o slave. Cada um desses componentes roda como processo independente em um cluster Spark. Uma aplicação Spark é composta de um driver e um ou mais executors. No papel de slave, o Spark executor faz o que lhe é mandado, que é executar a lógica de processamento de dados na forma de tasks. Cada task é executada em um CPU core separado, e é assim que o Spark processa dados em paralelo para ganhar velocidade. O paralelismo, portanto, vem de multiplicar a cadeia: o número de executors vezes os cores por executor dá o número de tasks que podem rodar ao mesmo tempo. É por isso que os três parâmetros que você especifica no launch (número de executors, memória por executor, cores por executor) são o que define o grau de paralelismo disponível para a aplicação.
+7. Por que o autor argumenta que melhorias no Spark Core beneficiam automaticamente todo o stack? O que isso implica sobre onde o esforço de otimização compensa? *(Spark Core)* R: Os demais componentes do stack do Spark são projetados para rodar sobre o Spark Core. Portanto, qualquer melhoria ou otimização feita no Spark Core entre versões do Spark fica automaticamente disponível para os outros componentes: Spark SQL, Structured Streaming, MLlib, GraphX e SparkR herdam tudo sem alterar uma linha do próprio código. A implicação é que o esforço de otimização gasto no nível do Core tem a maior alavancagem do sistema, porque uma única melhoria se multiplica por todos os tipos de workload de uma vez. O mesmo esforço gasto dentro de uma biblioteca só compensa para os usuários daquela biblioteca.
+8. Quais duas responsabilidades da distributed computing infrastructure o autor destaca como exigindo "conhecimento íntimo" de usuários avançados, e por que essas duas em particular determinariam a performance da aplicação? *(Spark Core)* R: As duas são lidar com falhas de computing tasks e a forma eficiente de mover dados entre máquinas, conhecida como data shuffling. Elas determinam a performance porque ambas são custos que o código da aplicação nunca declara diretamente, mas que escalam com o tamanho do job. O shuffle move dados pela rede entre máquinas, o que é muito mais lento que ler localmente, então um job que faz mais shuffle do que precisa passa a maior parte do tempo esperando em vez de computando. O tratamento de falhas de task importa porque, em escala de cluster, falhas são rotina, e quanto trabalho precisa ser recomputado depois de cada uma define um piso para o tempo total de execução. Um usuário avançado que entende as duas consegue projetar aplicações que evitam shuffles desnecessários e limitam quanto se perde quando uma task morre, e é por isso que o autor diz que é preciso conhecimento íntimo da infraestrutura.
+9. Explique o argumento de por que o SQL se tornou a lingua franca do processamento de dados, e o que o Spark SQL acrescenta a essa história na escala de petabytes. *(Spark SQL)* R: O SQL se tornou a lingua franca do processamento de dados porque é fácil para os usuários expressarem sua intenção: você declara o que quer, e não como computar, e o engine de execução então realiza otimizações inteligentes em seu nome. O Spark SQL leva esse mesmo acordo para o mundo do processamento de dados na escala de petabytes. Ele oferece duas portas de entrada: os usuários podem emitir queries SQL diretamente, ou usar a abstração de alto nível exposta pela DataFrame API. Por trás das duas está o otimizador Catalyst, que realiza otimizações comumente feitas em muitos engines analíticos de banco de dados. É por isso que a pesquisa de 2021 apontou o Spark SQL como o componente de crescimento mais rápido: ele abre o processamento distribuído de dados para um público mais amplo que os engenheiros de big data, ou seja, analistas de dados e qualquer pessoa familiarizada com SQL.
+10. Descreva o modelo de micro-batch por trás dos DStreams: em cima do que a entrada é dividida, e como o estado corrente de processamento é usado? *(Spark Structured Streaming)* R: O DStream implementa um modelo incremental de processamento de stream dividindo os dados de entrada em pequenos batches, e a divisão é feita por intervalo de tempo, não por contagem de registros nem por qualquer coisa no conteúdo dos dados. Cada batch é então processado como uma unidade. O estado corrente de processamento é regularmente combinado com cada batch que chega para produzir novos resultados. Essa combinação é o que torna o modelo incremental: os resultados se apoiam no estado carregado dos batches anteriores em vez de serem recomputados sobre o stream inteiro a cada vez.
+11. Em que sentido o Structured Streaming simplifica o modelo mental do desenvolvedor em comparação com o engine anterior? Relacione isso à observação de Reynold Xin citada no fim daquela seção. *(Spark Structured Streaming)* R: O engine anterior obrigava o desenvolvedor a pensar explicitamente em termos de stream: batches, intervalos de tempo e o estado carregado entre eles. O Structured Streaming simplifica ainda mais a vida de quem desenvolve aplicações de stream ao tratar a computação de streaming da mesma forma que você expressaria uma computação batch sobre dados estáticos, e então executar essa lógica de forma incremental e contínua conforme novos dados chegam. O desenvolvedor escreve o que parece uma query batch comum, e o engine assume a execução incremental mais a garantia de end-to-end exactly-once. É exatamente para isso que aponta a observação de Reynold Xin: a forma mais simples de fazer streaming analytics é não ter que raciocinar sobre streaming. O ganho é cognitivo, e não uma questão de throughput, porque a parte difícil do streaming nunca foi expressar a computação, e sim raciocinar sobre tempo, estado e semântica de entrega.
+12. Por que a natureza iterativa dos algoritmos de machine learning faz do Spark uma boa escolha para eles? *(Spark MLlib)* R: Algoritmos de machine learning são iterativos, ou seja, percorrem muitas iterações sobre os mesmos dados até que o objetivo desejado seja alcançado. Esse é justamente o padrão de acesso que os pesquisadores de Berkeley identificaram como mal atendido pelo MapReduce, e a razão pela qual introduziram in-memory storage em primeiro lugar, de modo que o encaixe não é coincidência, e sim a motivação original do projeto. Como os Spark executors podem cachear uma porção dos dados em memória, cada iteração lê da memória em vez de pagar o custo de storage de novo, e a economia se acumula a cada passagem. O Spark também torna fácil rodar esses algoritmos de forma escalável em um cluster de máquinas, de modo que o mesmo código que funciona em uma amostra funciona no dataset completo. Algoritmos comuns como classification, regression, clustering e collaborative filtering já vêm prontos.
+13. Por que o R sozinho era insuficiente para análise de dados em larga escala, e o que exatamente o SparkR contribui? *(SparkR)* R: R é uma linguagem de programação estatística popular que dá suporte a tarefas de processamento de dados e de machine learning, então a limitação não é expressividade nem a qualidade das bibliotecas. O problema é escala: o R não foi projetado para lidar com datasets grandes que não cabem em uma única máquina, então a análise fica limitada pela memória de um só computador. O SparkR é um pacote R que fornece um frontend leve para o Spark, e o que ele contribui é o engine de computação distribuída por baixo, não uma capacidade analítica nova por cima. O ponto é que ele faz isso através do shell R familiar e das APIs populares que muitos cientistas de dados já adoram, de modo que o usuário mantém o conhecimento que já tem e só o substrato de execução muda.
+14. Explique a ideia central do Adaptive Query Execution. A quais estatísticas de runtime ele reage, e quais três decisões ele consegue revisar? *(Adaptive Query Execution Framework)* R: A ideia central é que um plano de query escolhido antes da execução se apoia em estimativas, e estimativas podem estar erradas. O AQE adapta o plano de execução em runtime com base nas estatísticas mais recentes, em vez de se comprometer com o plano com que começou. As estatísticas às quais ele reage são o tamanho dos dados e o número de partições, entre outras. Com elas em mãos, pode revisar três decisões: trocar dinamicamente a estratégia de join, otimizar automaticamente skew joins e ajustar o número de partições. O ganho vem de agir sobre o que os dados de fato se revelaram ser, em vez do que o otimizador supôs que seriam.
+15. Explique o Dynamic Partition Pruning no contexto de um star schema. Qual tabela tem sua contagem de linhas reduzida, e com base em quê? *(Dynamic Partition Pruning)* R: A ideia principal por trás do DPP é simples: evitar ler dados desnecessários. Foi projetado especificamente para queries que fazem join de fact tables com dimension tables em um star schema. A tabela que tem a contagem de linhas reduzida é a fact table, que é a grande, e a base para a redução são as condições de filtro dadas nas dimension tables. Em outras palavras, o filtro é escrito contra a tabela pequena, mas a economia é colhida na grande, porque só as linhas da fact table que poderiam sobreviver ao join chegam a ser lidas. É por isso que o formato do star schema é o que torna isso possível: as chaves de join amarram as duas tabelas de forma suficientemente estreita para que um filtro de um lado possa ser empurrado para dentro da leitura do outro.
+16. Por que o Spark precisou de um accelerator-aware scheduler afinal? O que mudou na forma como as pessoas usam o Spark? *(Accelerator-aware Scheduler)* R: O que mudou foi a composição dos workloads. Cada vez mais usuários usam o Spark tanto para processamento de big data quanto para machine learning, e o segundo tipo frequentemente precisa de GPU para acelerar o treinamento de modelos. O modelo de recursos do Spark foi construído em torno das duas coisas com que um job de processamento de dados se importa, memória e CPU cores, que são os únicos recursos que você pode requisitar ao lançar uma aplicação. Esse modelo não tem vocabulário para GPU, então um job de treinamento não conseguia dizer ao scheduler do que realmente precisava. A melhoria fecha essa lacuna ao permitir que usuários descrevam e requisitem recursos de GPU para seus workloads complexos que envolvem machine learning.
+17. Percorra o exemplo de word count de cinco linhas e explique o que cada linha faz e que forma os dados têm depois dela. *(Spark Example Applications; Listing 1-1)* R: Linha 1, `sc.textFile("hdfs://<folder>")`, lê os arquivos de texto sob a pasta especificada; a forma depois disso é uma coleção de linhas, um elemento string por linha de texto em todos os arquivos. Linha 2, `flatMap(line => line.split(" "))`, percorre cada linha, tokeniza em um array de palavras e achata cada array, de modo que a forma passa a ser uma palavra por elemento; as fronteiras de linha desaparecem. Linha 3, `map(word => (word, 1))`, anexa uma contagem 1 a cada palavra, então a forma é uma coleção de pares chave-valor do tipo (word, 1), com tantos elementos quantas forem as ocorrências de palavras. Linha 4, `reduceByKey(_ + _)`, faz a soma da contagem de cada palavra, então a forma colapsa para um par por palavra distinta, (word, totalCount). Linha 5, `saveAsTextFile("hdfs://<output folder>")`, salva o resultado na pasta especificada e não produz coleção alguma, já que escreve para fora em vez de retornar dados. O ponto pedagógico é a densidade: muita coisa acontece por trás dessas cinco linhas, e o capítulo adia os detalhes para capítulos posteriores.
+18. Que problema o MLflow foi concebido para resolver, e por que o autor o enquadra como um problema de engenharia de software e não de machine learning? *(MLflow)* R: O MLflow é um projeto open source concebido em 2018 para fornecer uma plataforma que ajude a gerenciar o ciclo de vida de machine learning. O argumento do autor é que o machine learning em si se tornou mais acessível graças a avanços nos algoritmos, ao acesso fácil a grandes datasets e à disponibilidade de recursos educacionais, então o algoritmo deixou de ser o gargalo. O que ainda torna difícil aplicar machine learning a problemas de negócio é tudo o que cerca o modelo: rastrear e comparar experimentos, organizar projetos para que os resultados possam ser reproduzidos, empacotar modelos em formato padronizado e saber qual versão de qual modelo está em deploy onde. Essas são preocupações de reprodutibilidade, empacotamento, versionamento e deployment, que são o assunto cotidiano da engenharia de software, e não do machine learning. Os quatro componentes do MLflow mapeiam exatamente essas necessidades: Tracking, Projects, Models e Registry.
 
 ---
 
-## Key terms to define before moving on
+## Nível 3 — Aplicação e transferência
 
-Write a one-line definition for each, in your own words, without looking:
+Use o conteúdo do capítulo para raciocinar sobre situações concretas. O capítulo te dá o suficiente para responder; ele não entrega a resposta pronta.
+
+1. Você submete uma aplicação com 10 executors, 4 cores e 8 GB cada. Usando o modelo do capítulo, quantas tasks podem rodar simultaneamente? Quanta memória total fica sob controle da aplicação, e quanto do cluster o próprio driver representa? *(Spark Drivers and Executors)*
+2. Dois times rodam, cada um, uma aplicação Spark de vida longa e querem compartilhar um dataset intermediário caro de produzir. Com base no modelo de isolamento de executors, quais são as opções deles e o que cada uma custa? *(Spark Drivers and Executors)*
+3. Uma empresa já roda um cluster YARN para jobs de Hive e Pig. Com base no capítulo, qual é o caminho dela para adotar Spark, e o que mudaria se fosse uma startup sem cluster existente? *(Spark Cluster and Resource Management System)*
+4. Seu pipeline atualmente escreve resultados intermediários em storage entre um estágio batch e um estágio de streaming. De qual benefício específico do stack unificado o capítulo diz que você está abrindo mão? *(Spark Unified Stack)*
+5. Um join no seu job está muito enviesado (skewed): uma partição demora vinte vezes mais que as demais. Qual feature do Spark 3.0 endereça isso, e do que ela precisa para agir? *(Adaptive Query Execution Framework)*
+6. Você consulta uma fact table grande com join em uma dimension table pequena e filtrada. Descreva o que o DPP faz com a leitura física, e por que o formato do star schema é o que torna isso possível. *(Dynamic Partition Pruning)*
+7. Um analista que sabe SQL mas não Scala precisa processar dados em escala de petabytes. Quais partes do stack o capítulo diz que tornam isso possível, e quais duas interfaces estão disponíveis para ele? *(Spark SQL)*
+8. Um cientista de dados tem código pandas funcionando que não cabe mais em memória em uma máquina. Usando apenas o capítulo, exponha dois caminhos possíveis e o trade-off entre eles. *(Koalas)*
+9. Você precisa rodar queries interativas sobre a saída de um modelo pontuando streams em tempo real. Quais componentes isso toca, e por que o capítulo apresenta isso como algo recém-viabilizado, e não meramente conveniente? *(Spark Unified Stack)*
+10. Mapeie o exemplo de word count no modelo de executors: quais linhas fazem o trabalho ser distribuído, onde ocorre movimentação de dados entre máquinas, e qual linha força um resultado de volta pelo driver ou para fora, no storage? *(Spark Example Applications + Spark Drivers and Executors)*
+11. Das sete categorias de aplicação listadas, escolha as três mais próximas de um pipeline de coleta e parsing de dados públicos e justifique cada escolha a partir das descrições do capítulo. *(Apache Spark Applications)*
+12. Seu job de ingestão e seu job de analytics intermitentemente leem saída escrita pela metade e discordam sobre schema. Qual componente do ecossistema o capítulo propõe, e qual das três capacidades dele endereça qual sintoma? *(Delta Lake)*
+
+---
+
+## Nível 4 — Análise e síntese
+
+Raciocínio que cruza seções. Estas têm respostas defensáveis em vez de resposta única, mas todos os ingredientes estão no capítulo.
+
+1. O capítulo descreve o Spark como master/slave, com o driver como master. Mas também descreve um cluster manager com seu próprio master e seus próprios workers. Desenhe as duas hierarquias e explique como elas se cruzam. Qual master não consegue funcionar sem o outro? *(Spark Cluster and Resource Management System + Spark Drivers and Executors + Figure 1-1)*
+2. Compare as Figuras 1-1 e 1-2. O que cada uma mostra que a outra omite, e o que você precisaria acrescentar a qualquer uma delas para ter um retrato completo de uma aplicação em execução?
+3. O capítulo aponta o data shuffling como preocupação central da infraestrutura distribuída e, separadamente, cita três otimizações do Spark 3.0. Argumente qual das três reduz mais diretamente o custo de shuffle, e qual reduz I/O em vez disso.
+4. O capítulo diz que aplicações sobre o Spark Core herdam suas melhorias automaticamente. Ainda assim, os ganhos de destaque do Spark 3.0 vieram do Spark SQL, e não do Core. Concilie essas duas afirmações. O que isso sugere sobre onde fica, no Spark 3.0, o usuário que só usa RDD?
+5. Trace a escada de abstração que o capítulo constrói: RDD → DataFrame → SQL → pandas API. Em cada degrau, o que o usuário ganha e de que controle ele abre mão?
+6. O capítulo apresenta a decisão de isolamento de executors como benefício. Reformule-a como custo, usando a seção de resource management: o que a alocação de executors por aplicação implica para a utilização do cluster quando muitas aplicações curtas rodam?
+7. Monte uma tabela com uma linha por componente do stack (Core, SQL, Structured Streaming, MLlib, GraphX, SparkR) e colunas para: abstração primária, tipo de workload, linguagens expostas e dependência de outros componentes. Quais células o capítulo deixa em branco?
+8. A evidência de performance no capítulo vem de três fontes: a alegação de 100x do site, o resultado do GraySort de 2014 e a comparação TPC-DS 30 TB. Ordene-as por quanto você confiaria nelas para prever o comportamento do seu próprio workload, e diga o que cada uma deixa de fora.
+9. O capítulo argumenta que o Spark reduz custo operacional ao substituir vários sistemas especializados. Construa o contra-argumento usando apenas material deste capítulo: onde um único engine unificado impõe custos próprios?
+10. Delta Lake, Koalas e MLflow são todos apresentados como "ecossistema" e não como "stack". Com base em como o capítulo descreve cada um, articule o critério que separa as duas categorias. O Delta Lake de fato se encaixa no seu critério?
+11. Escreva o argumento do capítulo a favor do Spark em cinco frases, uma por seção, de modo que remover qualquer uma delas quebre o argumento.
+12. Identifique três afirmações neste capítulo que são feitas sem evidência de suporte. Para cada uma, diga que evidência a resolveria.
+
+---
+
+## Nível 5 — Além do capítulo (backlog, não notas)
+
+O capítulo foi escrito contra o Spark 3.0/3.1 em 2021. Estes itens são pontos fracos conhecidos — verifique contra a documentação atual antes de fixar qualquer coisa nas suas notas permanentes.
+
+1. O capítulo apresenta o DStream como a principal abstração de streaming e o Structured Streaming como um engine mais novo. Verifique qual é o atual, qual é legado, e que abstração o Structured Streaming de fato usa. O enquadramento do capítulo aqui é a parte mais defasada dele.
+2. O capítulo data o Structured Streaming no Spark 2.1. Verifique as versões de introdução e de disponibilidade geral.
+3. Koalas como projeto separado versus a pandas API integrada ao próprio Spark — descubra o que aconteceu e em qual versão.
+4. Mesos como resource manager do Spark: verifique o status atual de suporte. Acrescente também o alvo de deployment que o capítulo omite por completo e que hoje é o mais comum.
+5. A lista de features do Spark 3.0 no capítulo é parcial. Descubra qual é o padrão de AQE, DPP e do accelerator-aware scheduler nas versões atuais, e quais outras otimizações chegaram no 3.2, no 3.4 e no 4.0.
+6. O Delta Lake é apresentado como *a* resposta para consistência de storage. Identifique os open table formats concorrentes e as dimensões em que diferem — isso é diretamente relevante para a disciplina de lakehouse.
+7. O capítulo nunca distingue narrow de wide transformations, actions de transformations, nem jobs de stages de tasks, apesar de o exemplo de word count depender das três distinções. Anote isso como lacuna a fechar no capítulo de RDDs.
+8. `sc.textFile` na Listing 1-1 usa o SparkContext, enquanto o texto diz que o driver trabalha através da SparkSession. Descubra a relação entre os dois e qual deles o código atual deve usar.
+
+---
+
+## Termos-chave para definir antes de seguir adiante
+
+Escreva uma definição de uma linha para cada, com suas próprias palavras, sem consultar:
 
 Spark cluster · cluster manager · worker · Spark application · driver · executor · task · SparkSession · SparkContext · RDD · partition · data shuffling · DataFrame · Catalyst · Tungsten · DStream · micro-batch · exactly-once · AQE · skew join · DPP · fact table · dimension table · star schema · lakehouse · schema evolution
 
-Any term you cannot define is a re-read target, not a Level 5 item.
+Qualquer termo que você não conseguir definir é alvo de releitura, não item de Nível 5.
+
+### Gabarito
+
+**Spark cluster** — O conjunto de máquinas sobre o qual o Spark, sendo um sistema distribuído, é implantado. Vai de poucas máquinas a milhares; o maior do mundo, segundo o FAQ citado, passa de 8000.
+
+**cluster manager** — O componente master de um resource management system. Sabe onde os workers estão e quanta memória e quantos CPU cores cada um tem, e orquestra o trabalho atribuindo-o a eles. Exemplos: YARN, Mesos e o cluster manager que vem com o próprio Spark.
+
+**worker** — O componente slave de um resource management system. Oferece seus recursos (memória, CPU) ao cluster manager e executa o trabalho atribuído, o que inclui lançar processos e monitorar a saúde deles.
+
+**Spark application** — A unidade que você submete, composta de duas partes: a lógica de processamento de dados expressa nas Spark APIs, e o driver.
+
+**driver** — O coordenador central da aplicação, no papel de master. Negocia com o cluster manager em quais máquinas rodar, pede o lançamento dos executors, distribui as tasks entre eles e coleta e mescla os resultados para apresentar ao usuário. Opera através da SparkSession.
+
+**executor** — Processo JVM dedicado a uma única aplicação Spark, no papel de slave. Executa a lógica na forma de tasks e cacheia porções dos dados em memória ou em disco quando a aplicação manda. Vive enquanto a aplicação viver, de minutos a dias.
+
+**task** — A unidade de execução da lógica de processamento. Cada task roda em um CPU core separado, e é daí que vem o paralelismo do Spark.
+
+**SparkSession** — O componente através do qual o driver realiza seu trabalho. *O capítulo 1 apenas a nomeia; a definição como ponto de entrada único do Spark vem do capítulo 2.*
+
+**SparkContext** — *Fora do capítulo.* Aparece somente como a variável `sc` na Listing 1-1, sem uma linha de explicação. A relação entre ele e a SparkSession é justamente o item 8 do Nível 5.
+
+**RDD** — Resilient Distributed Dataset. Coleção de objetos fault-tolerant, particionada pelo cluster, manipulável em paralelo. É a abstração de programação do Spark Core e permite processar em larga escala sem se preocupar com onde os dados residem nem com falhas de máquina.
+
+**partition** — A fatia de um dataset que reside em uma máquina do cluster. *O capítulo usa o conceito o tempo todo (RDD "particionado pelo cluster", AQE ajustando "o número de partições") mas nunca o define.*
+
+**data shuffling** — A movimentação de dados entre máquinas do cluster. É uma das responsabilidades da distributed computing infrastructure e uma das duas coisas que o autor diz exigirem conhecimento íntimo de usuários avançados.
+
+**DataFrame** — Coleção distribuída de dados organizada em colunas nomeadas, conceitualmente equivalente a uma tabela de banco relacional. É a abstração de alto nível do Spark SQL, inspirada nos data frames de R e Python.
+
+**Catalyst** — O otimizador do Spark SQL. Realiza otimizações comumente feitas em muitos engines analíticos de banco de dados.
+
+**Tungsten** — *Só o nome.* Citado ao lado do Catalyst como fonte das otimizações que a MLlib baseada em DataFrame herda do engine do Spark SQL. O capítulo não diz o que ele faz.
+
+**DStream** — Discretized stream. A abstração original de streaming do Spark: divide a entrada em pequenos batches por intervalo de tempo e combina cada um com o estado corrente de processamento para produzir novos resultados.
+
+**micro-batch** — Cada um desses pequenos lotes em que a entrada é fatiada por intervalo de tempo. *O capítulo descreve o mecanismo mas não usa o termo.*
+
+**exactly-once** — Garantia de que cada registro é processado e refletido no resultado uma única vez, nem perdido nem duplicado. *O capítulo atribui a garantia end-to-end ao Structured Streaming, mas não explica o que ela significa.*
+
+**AQE** — Adaptive Query Execution. Framework do Spark 3.0 que adapta o plano de execução em runtime, com base nas estatísticas mais recentes de tamanho dos dados e número de partições. Revisa três decisões: estratégia de join, skew joins e número de partições.
+
+**skew join** — Join em que as chaves se distribuem de forma desigual entre as partições, deixando uma partição muito maior que as demais e travando o job nela. *O capítulo cita que o AQE os otimiza automaticamente, sem definir o que são.*
+
+**DPP** — Dynamic Partition Pruning. Otimização do Spark 3.0 que evita ler dados desnecessários, reduzindo as linhas da fact table que precisam entrar no join com base nas condições de filtro dadas nas dimension tables.
+
+**fact table** — A tabela grande de um star schema, a que guarda os eventos ou as medições. É a que o DPP poupa de ler. *Usada no capítulo sem definição.*
+
+**dimension table** — As tabelas menores de um star schema, com os atributos descritivos pelos quais se filtra. É nelas que o filtro aproveitado pelo DPP é escrito. *Usada no capítulo sem definição.*
+
+**star schema** — Modelagem em que uma fact table central se conecta a várias dimension tables. É o formato para o qual o DPP foi projetado. *Usado no capítulo sem definição.*
+
+**lakehouse** — *Não aparece no capítulo.* O termo vem do próprio guia (item 6 do Nível 5). Nomeia a arquitetura que combina o armazenamento barato e aberto de um data lake com as garantias transacionais e de schema típicas de um data warehouse, que é exatamente o que o Delta Lake fornece.
+
+**schema evolution** — Capacidade de mudar o schema de uma tabela ao longo do tempo sem quebrar leitores e escritores existentes. *O capítulo lista o suporte a "schema enforcement and evolution" como capacidade do Delta Lake, sem detalhar nenhum dos dois.*
