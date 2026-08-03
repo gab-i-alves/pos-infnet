@@ -21,6 +21,34 @@ Cada aula passa por quatro etapas. As três primeiras são consumo; só a quarta
 
 A "nota fiscal" é o compromisso central. Pode ser um post, um mini projeto, exercícios resolvidos, flashcards ou um notebook comentado. Sem ela, as outras três etapas não contam.
 
+### Guia de leitura
+
+As etapas **pre** e **deep** produzem um artefato só: um guia de leitura por capítulo de livro, e não um resumo por aula. Indexar pela fonte importa, porque uma aula costuma cobrir capítulos de livros diferentes, e um capítulo costuma sobreviver à aula que o pediu.
+
+O guia é uma lista de perguntas escritas **antes** da leitura, respondidas por escrito **depois**. A ordem é o método inteiro: ser questionada antes de ler melhora a retenção mesmo quando o palpite sai errado, e puxar da memória fixa mais do que reler. Um resumo pronto para consumir não faz nenhuma das duas coisas.
+
+As perguntas ficam em inglês, porque os livros estão em inglês e o vocabulário a fixar é inglês (`partition`, `shuffle`, `lazy evaluation`). Traduzir força uma tradução mental a cada leitura e impede varrer a página procurando as palavras da pergunta.
+
+Cada guia tem cinco níveis, ordenados por nível e não por ordem de leitura, para que a base venha inteira primeiro:
+
+| Nível | O que cobra |
+|---|---|
+| **L1** | recall e definições |
+| **L2** | compreensão, explicar com as próprias palavras |
+| **L3** | aplicação, raciocinar sobre uma situação concreta |
+| **L4** | análise e síntese, conectar seções que o autor manteve separadas |
+| **L5** | além do capítulo: o que envelheceu, o que o autor omitiu |
+
+Quando dois livros cobrem o mesmo assunto, entra um **L6** de comparação entre eles. É onde as divergências aparecem, e onde dá para ver qual autor errou uma data ou uma versão.
+
+Três regras que o formato impõe:
+
+- **Toda pergunta de L1 a L4 precisa ter resposta no capítulo.** Conceito que o texto apenas nomeia sem definir vira item de L5, não pergunta de L1. Isso tira de mim a decisão sobre onde termina a leitura e onde começa o aprofundamento: a fronteira vira consequência do que o capítulo entrega.
+- **Item de L5 vai para o backlog, nunca para as notas como fato.** Livro de 2020 ou 2021 erra versão, número de porta e nome de produto. Cada item de L5 é verificado contra documentação oficial, nota de release ou código-fonte, com URL e data de acesso registradas no próprio guia.
+- **Cada pergunta traz o ponteiro da seção** entre parênteses, o que faz o guia servir também de índice do capítulo.
+
+No fim vem uma lista de termos-chave para definir sem consultar. Termo que eu não consigo definir é alvo de releitura, não item de L5.
+
 ---
 
 ## Disciplinas
@@ -40,21 +68,26 @@ A "nota fiscal" é o compromisso central. Pode ser um post, um mini projeto, exe
 
 ## Como está organizado
 
-Um documento por etapa, sempre os mesmos quatro, sempre com os mesmos nomes.
+Um guia de leitura por capítulo de livro, dentro da pasta da aula que pediu aquela leitura.
 
 ```
 NN-disciplina/
-  README.md              índice e estado da disciplina
+  README.md                    índice da disciplina e tracker das aulas
   aula-NN/
-    README.md            índice da aula e estado das quatro etapas
-    01-pre-aula.md       a leitura do professor
-    02-aprofundamento.md o estudo por conta própria
-    03-aula.md           perguntas preparadas e anotações da aula ao vivo
-    04-pos-aula.md       a nota fiscal
-  notebooks/             código e experimentos
+    <livro>-ch<NN>.md          um guia por capítulo de livro
+  notebooks/                   código e experimentos
 ```
 
-As pastas de aula são criadas quando a disciplina começa. Os documentos são markdown com frontmatter (`title`, `aula`, `data`, `tags`), então servem tanto para leitura direta no GitHub quanto para importação em qualquer sistema de notas.
+O nome do arquivo é o slug do livro mais o capítulo com dois dígitos, sem prefixo, para ordenar por livro na listagem. Slugs em uso:
+
+| Livro | Slug |
+|---|---|
+| Luu, *Beginning Apache Spark 3* (Apress, 2021) | `beginning-spark3` |
+| Damji et al., *Learning Spark, 2nd Edition* (O'Reilly, 2020) | `learning-spark-2ed` |
+
+As pastas de aula são criadas quando a disciplina começa. Os documentos são markdown puro, sem dependência de ferramenta, então servem tanto para leitura direta no GitHub quanto para importação em qualquer sistema de notas.
+
+A nota fiscal de cada aula, quando existir, mora na mesma pasta com nome próprio.
 
 ---
 
