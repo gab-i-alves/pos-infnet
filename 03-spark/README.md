@@ -36,11 +36,11 @@ Arquitetura unificada do Spark, processamento em larga escala e preparação do 
 
 Conversão de RDDs em DataFrames e persistência de consultas e resultados em storage.
 
-- [ ] Luu, cap. 3, seção 1 — *Understanding RDD*: conversão de RDDs em DataFrames, tratamento de dados distribuídos.
-- [ ] Damji, cap. 3 — *Apache Spark's Structured APIs*: conversão de RDDs em DataFrames e estruturação de dados para pipelines.
-- [ ] Chadha, cap. 1 — *Data Ingestion and Data Extraction with Apache Spark*: RDDs em DataFrames e tabelas otimizadas no Databricks.
-- [ ] Luu, cap. 3, seção 2 — *Introduction to the DataFrame API*: persistir consultas, gravar resultados e tabelas.
-- [ ] Damji, cap. 4 — *Spark SQL and DataFrames: Introduction to Built-in Data Sources*: salvar tabelas e resultados em Parquet/Delta/S3.
+- [x] Luu, cap. 3, seção 1 — *Understanding RDD*: conversão de RDDs em DataFrames, tratamento de dados distribuídos.
+- [x] Damji, cap. 3 — *Apache Spark's Structured APIs*: conversão de RDDs em DataFrames e estruturação de dados para pipelines.
+- [x] Chadha, cap. 1 — *Data Ingestion and Data Extraction with Apache Spark*: RDDs em DataFrames e tabelas otimizadas no Databricks.
+- [x] Luu, cap. 3, seção 2 — *Introduction to the DataFrame API*: persistir consultas, gravar resultados e tabelas.
+- [x] Damji, cap. 4 — *Spark SQL and DataFrames: Introduction to Built-in Data Sources*: salvar tabelas e resultados em Parquet/Delta/S3.
 
 ### Aula 03 — Transformação e análise avançada
 
