@@ -46,12 +46,12 @@ Conversão de RDDs em DataFrames e persistência de consultas e resultados em st
 
 Operações relacionais e analíticas, joins e extensibilidade do Spark SQL.
 
-- [ ] Luu, cap. 4, seção 1 — *Aggregations*: transformação de dados complexos com operações relacionais e analíticas.
-- [ ] Damji, cap. 2, seção 2 — *Step 2: Using the Scala or PySpark Shell*: transformar dados complexos em escala.
-- [ ] Chadha, cap. 2, seção *Applying basic transformations to data with Apache Spark*: operações relacionais e analíticas em pipelines.
-- [ ] Luu, cap. 4, seção 2 — *Joins*: fortalecer análises e ampliar a extensibilidade das soluções.
-- [ ] Damji, cap. 5 — *Spark SQL and DataFrames: Interacting with External Data Sources*: APIs, otimizações e padrões extensíveis.
-- [ ] Chadha, cap. 2, seção *Filtering data with Apache Spark*: práticas que aumentam extensibilidade e desempenho.
+- [x] Luu, cap. 4, seção 1 — *Aggregations*: transformação de dados complexos com operações relacionais e analíticas.
+- [x] Damji, cap. 2, seção 2 — *Step 2: Using the Scala or PySpark Shell*: transformar dados complexos em escala. Já coberto pelo guia da [aula 01](aula-01/learning-spark-2ed-ch02.md), que tem oito questões apontando para o Step 2.
+- [x] Chadha, cap. 2, seção *Applying basic transformations to data with Apache Spark*: operações relacionais e analíticas em pipelines.
+- [x] Luu, cap. 4, seção 2 — *Joins*: fortalecer análises e ampliar a extensibilidade das soluções.
+- [x] Damji, cap. 5 — *Spark SQL and DataFrames: Interacting with External Data Sources*: APIs, otimizações e padrões extensíveis.
+- [x] Chadha, cap. 2, seção *Filtering data with Apache Spark*: práticas que aumentam extensibilidade e desempenho.
 
 ### Aula 04 — Otimização de desempenho no Spark
 

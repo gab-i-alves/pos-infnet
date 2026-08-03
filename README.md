@@ -88,6 +88,8 @@ O nome do arquivo é o slug do livro mais o capítulo com dois dígitos, sem pre
 | Damji et al., *Learning Spark, 2nd Edition* (O'Reilly, 2020) | `learning-spark-2ed` |
 | Chadha, *Data Engineering with Databricks Cookbook* (Packt) | `databricks-cookbook` |
 
+Quando uma aula pede um capítulo que outra aula já cobriu, **nenhum guia novo é criado**. O checklist da aula aponta para o guia que já existe. É o caso que o indexar-pela-fonte foi feito para atender: o capítulo sobrevive à aula que o pediu, e duplicá-lo criaria duas versões da mesma leitura para manter em dia.
+
 As pastas de aula são criadas quando a disciplina começa. Os documentos são markdown puro, sem dependência de ferramenta, então servem tanto para leitura direta no GitHub quanto para importação em qualquer sistema de notas.
 
 A nota fiscal de cada aula, quando existir, mora na mesma pasta com nome próprio.
