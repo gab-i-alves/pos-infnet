@@ -19,42 +19,6 @@ Quatro competências, e a rubrica do projeto cobra quatro itens de cada uma.
 
 ---
 
-## Tracker das aulas
-
-Quatro etapas por aula: **pre** (a leitura que o professor passou), **deep** (aprofundamento próprio), **live** (a aula ao vivo, com perguntas preparadas), **proof** (a nota fiscal). As etapas `pre` e `deep` produzem um guia de leitura por capítulo de livro, com perguntas escritas antes da leitura e respondidas depois. Método completo no [README raiz](../README.md).
-
-Legenda: `✓` feito · `~` parcial · vazio = não começou.
-
-| # | Aula | Leituras | pre | deep | live | proof |
-|---|---|---|---|---|---|---|
-| [01](aula-01/) | Introdução ao Apache Spark | 4 | ✓ | ✓ | ~ | |
-| 02 | Transformação e persistência SQL | 5 | | | | |
-| 03 | Transformação e análise avançada | 6 | | | | |
-| 04 | Otimização de desempenho no Spark | 6 | | | | |
-| 05 | Processamento em tempo real | 6 | | | | |
-| 06 | Gerenciamento de fluxos resilientes | 2 | | | | |
-| 07 | Integração e governança de dados | 3 | | | | |
-| 08 | Gestão de dados e transparência | 1 | | | | |
-
-Total: **33 leituras** na trilha oficial. O estado da aula 01 é o que estava registrado no README da branch `method-one` antes do reset da `main`; ajustar se não corresponder mais.
-
-### O que já existe no repositório
-
-Apenas a `aula-01`, com os quatro guias de leitura das quatro leituras da trilha, todos respondidos.
-
-| Arquivo | Capítulo | Questões |
-|---|---|---|
-| [beginning-spark3-ch01.md](aula-01/beginning-spark3-ch01.md) | Luu, cap. 1 — *Introduction to Apache Spark* | 90 |
-| [beginning-spark3-ch02.md](aula-01/beginning-spark3-ch02.md) | Luu, cap. 2 — *Working with Apache Spark* | 104 |
-| [learning-spark-2ed-ch01.md](aula-01/learning-spark-2ed-ch01.md) | Damji, cap. 1 — *Introduction to Apache Spark* | 117 |
-| [learning-spark-2ed-ch02.md](aula-01/learning-spark-2ed-ch02.md) | Damji, cap. 2 — *Downloading Apache Spark and Getting Started* | 130 |
-
-Os quatro têm o Nível 5 verificado contra a documentação do Spark 4.2.0, notas de release e código-fonte, com URL e data de acesso registradas no próprio guia. O guia do Damji cap. 1 tem ainda um Nível 6 que compara os dois livros capítulo a capítulo, e é onde as divergências entre eles ficam registradas.
-
-As pastas `aula-02` a `aula-08` ainda não foram criadas.
-
----
-
 ## Trilha de leitura, aula por aula
 
 Abreviações: **Luu** = *Beginning Apache Spark 3* · **Damji** = *Learning Spark*, 2ª ed. · **Chadha** = *Data Engineering with Databricks Cookbook* · **Girten** = *Building Modern Data Applications Using Databricks Lakehouse*. Referências completas na [bibliografia](#bibliografia).
@@ -143,7 +107,7 @@ Isolamento de catálogos, armazenamentos externos, pipelines DLT e linhagem.
 | Chadha | Pulkit Chadha. *Data Engineering with Databricks Cookbook*. Packt. |
 | Girten | Will Girten. *Building Modern Data Applications Using Databricks Lakehouse*. Packt. |
 
-Os capítulos em PDF são material licenciado e não entram neste repositório (ver `.gitignore`). Ficam fora dele, em `Documentation/capitulos-pos-infnet/03-spark/aula-NN/`.
+Os capítulos em PDF são material licenciado e não entram neste repositório (ver `.gitignore`).
 
 ---
 
