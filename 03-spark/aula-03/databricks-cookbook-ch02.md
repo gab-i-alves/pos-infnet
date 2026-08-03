@@ -26,7 +26,17 @@ Respostas curtas e conferíveis. Uma ou duas frases cada.
 
 **1.** Quais são as sete receitas do capítulo, na ordem? *(Chapter intro)*
 
-R: Applying basic transformations to data with Apache Spark. Filtering data with Apache Spark. Performing joins with Apache Spark. Performing aggregations with Apache Spark. Using window functions with Apache Spark. Writing custom UDFs in Apache Spark. Handling null values with Apache Spark.
+R: São estas sete, nesta ordem, e mantenho os títulos em inglês porque é assim que eles aparecem no sumário:
+
+1. Applying basic transformations to data with Apache Spark
+2. Filtering data with Apache Spark
+3. Performing joins with Apache Spark
+4. Performing aggregations with Apache Spark
+5. Using window functions with Apache Spark
+6. Writing custom UDFs in Apache Spark
+7. Handling null values with Apache Spark
+
+As sete repetem "with Apache Spark" no fim, o que não distingue uma da outra e ocupa metade de cada título.
 
 **2.** O que o parágrafo de abertura promete que você saberá fazer ao fim do capítulo? *(Chapter intro)*
 

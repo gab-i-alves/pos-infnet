@@ -24,7 +24,17 @@ Respostas curtas e conferíveis. Uma ou duas frases cada.
 
 **1.** Quais são as sete receitas do capítulo, na ordem? *(Chapter intro)*
 
-R: Reading CSV data with Apache Spark. Reading JSON data with Apache Spark. Reading Parquet data with Apache Spark. Parsing XML data with Apache Spark. Working with nested data structures in Apache Spark. Processing text data in Apache Spark. Writing data with Apache Spark.
+R: São estas sete, nesta ordem, e mantenho os títulos em inglês porque é assim que eles aparecem no sumário:
+
+1. Reading CSV data with Apache Spark
+2. Reading JSON data with Apache Spark
+3. Reading Parquet data with Apache Spark
+4. Parsing XML data with Apache Spark
+5. Working with nested data structures in Apache Spark
+6. Processing text data in Apache Spark
+7. Writing data with Apache Spark
+
+Seis das sete abrem com um gerúndio de leitura ou escrita, e todas fecham com "with Apache Spark" ou "in Apache Spark". O sufixo não distingue uma receita da outra.
 
 **2.** Quais quatro formatos de arquivo o capítulo promete cobrir, e quais duas capacidades adicionais ele promete no parágrafo de abertura? *(Chapter intro)*
 
